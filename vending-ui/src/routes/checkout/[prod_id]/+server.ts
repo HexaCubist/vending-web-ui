@@ -28,7 +28,9 @@ export const GET: RequestHandler = async ({ url, params }) => {
 		const success_url = new URL(url);
 		success_url.pathname = `/checkout/${params.prod_id}/success`;
 		const cancel_url = new URL(url);
-		cancel_url.pathname = `/checkout/${params.prod_id}/cancel`;
+		cancel_url.pathname = `/`;
+		cancel_url.searchParams.set('cancelled', 'true');
+		cancel_url.searchParams.set('prod_id', params.prod_id);
 
 		const session = await stripe.checkout.sessions.create({
 			line_items: [{ price: priceID, quantity: 1 }],
@@ -44,7 +46,8 @@ export const GET: RequestHandler = async ({ url, params }) => {
 					shelf_loc: product.metadata.shelf_loc,
 					quantity: 1
 				}
-			}
+			},
+			expires_at: Math.floor(Date.now() / 1000) + 3600 * 2 // Configured to expire after 2 hours
 		});
 		if (!session.url) {
 			return new Response('No session url found', { status: 500 });

@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ params }) => {
 	if (paymentIntent.status === 'succeeded') {
 		return json({ success: true });
 	} else {
-		await stripe.paymentIntents.cancel(paymentIntentId);
+		// await stripe.paymentIntents.cancel(paymentIntentId);
 		return json({ success: false });
 	}
 };

@@ -14,13 +14,19 @@ export const GET: RequestHandler = async () => {
 		apiVersion: '2022-11-15'
 	});
 
-	const pendingPayments = await stripe.paymentIntents.search({
+	let paymentIntents = await stripe.paymentIntents.search({
 		query: `status:'requires_capture' AND metadata['vendable']:'true'`
 	});
 
-	const pendingToVendor = pendingPayments.data.map((payment) => {
+	// Filter out recently completed payments
+	let pendingPayments = paymentIntents.data.filter(
+		(payment) => payment.status === 'requires_capture'
+	);
+
+	const pendingToVendor = pendingPayments.map((payment) => {
 		return {
 			id: payment.id,
+			status: payment.status,
 			quantity: payment.metadata.quantity,
 			vendable: payment.metadata.vendable,
 			shelf_loc: payment.metadata.shelf_loc,
