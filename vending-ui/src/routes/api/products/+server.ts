@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { error, json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
-import getProducts from '$lib/getProducts.server';
+import getProducts from '$lib/getProducts';
 
 export const GET: RequestHandler = async ({ url }) => {
 	if (!env.STRIPE_KEY) {

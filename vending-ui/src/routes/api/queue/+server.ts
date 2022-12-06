@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { error, json, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
+import { getQueue } from '$lib/queueManager';
 
 export const prerender = false;
 
@@ -10,30 +11,13 @@ export const GET: RequestHandler = async () => {
 		return new Response('No Stripe key found', { status: 500 });
 	}
 
-	const stripe = new Stripe(env.STRIPE_KEY, {
-		apiVersion: '2022-11-15'
-	});
+	const pendingQueue = await getQueue(env.STRIPE_KEY);
 
-	let paymentIntents = await stripe.paymentIntents.search({
-		query: `status:'requires_capture' AND metadata['vendable']:'true'`
-	});
-
-	// Filter out recently completed payments
-	let pendingPayments = paymentIntents.data.filter(
-		(payment) => payment.status === 'requires_capture'
+	return json(
+		pendingQueue.map((queueItem) => ({
+			product_id: queueItem.product_id,
+			shelf_loc: queueItem.shelf_loc,
+			quantity: queueItem.quantity
+		}))
 	);
-
-	const pendingToVendor = pendingPayments.map((payment) => {
-		return {
-			id: payment.id,
-			status: payment.status,
-			quantity: payment.metadata.quantity,
-			vendable: payment.metadata.vendable,
-			shelf_loc: payment.metadata.shelf_loc,
-			product_id: payment.metadata.product_id,
-			product_name: payment.metadata.product_name
-		};
-	});
-
-	return json(pendingToVendor);
 };

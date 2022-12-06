@@ -1,9 +1,10 @@
-import type { PageLoad } from './$types';
+import type { PageServerLoad } from './$types';
 import Stripe from 'stripe';
 import { error, json, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
+import { getPrice } from '$lib/getProducts';
 
-export const load: PageLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params }) => {
 	if (!env.STRIPE_KEY) {
 		return { product: {} };
 	}
@@ -15,7 +16,8 @@ export const load: PageLoad = async ({ params }) => {
 	const product = await stripe.products.retrieve(params.prod_id);
 	return {
 		product: {
-			name: product.name
+			name: product.name,
+			price: getPrice(product)
 		}
 	};
 };

@@ -1,4 +1,21 @@
 /* Write your global styles here, in PostCSS syntax */
 @tailwind base;
 @tailwind components;
-@tailwind utilities
+@tailwind utilities;
+
+@layer utilities {
+	.bg-brand-gradient {
+		background: linear-gradient(
+			146deg,
+			#567dff 0%,
+			#9f42d1 20%,
+			#f04ab9 35%,
+			#ff25c7 50%,
+			#ff3c6d 75%,
+			#ff856a 100%
+		);
+	}
+	.bg-brand-gradient-light {
+		background: linear-gradient(146deg, #daebff 0%, #ffa9ff 45%, #ffd1e4 75%, #ffd2c1 100%);
+	}
+}

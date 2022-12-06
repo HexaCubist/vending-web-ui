@@ -1,52 +1,18 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Product from '$lib/components/product.svelte';
 	import { slide } from 'svelte/transition';
     import type { PageData } from './$types';
 
     export let data: PageData;
 
     let purchasing = false;
-
-    const purchase =(product: string): void => {
-        purchasing = true;
-        console.log(product);
-        goto(`/checkout/${product}`);
-    }
 </script>
 
-<div class="hero h-screen max-h-96 bg-green-100">
-    <div class="hero-content text-center">
-        <div class="max-w-md">
-            <h1 class="text-5xl font-bold">Vending</h1>
-            <p class="py-6">
-            Welcome! Check out the products below, and click on one to purchase it.
-            </p>
-        </div>
-    </div>
-</div>
-<div class="products-wrapper bg-green-500 py-10">
-
-    <div class="products  flex justify-center gap-6 mx-auto max-w-2xl">
+<div class="products-wrapper py-10">
+    <div class="products flex flex-wrap justify-center gap-6 mx-auto max-w-screen-lg">
         {#each data.products as product}
-        <div class="card card-compact w-72 bg-base-100 shadow-xl">
-            <figure><img src={product.image} alt="" /></figure>
-            <div class="card-body">
-              <h2 class="card-title">{product.name}</h2>
-              {#if product.description}
-                <p>{product.description}</p>
-              {/if}
-              <div class="card-actions justify-end">
-                <button on:click={()=>{purchase(product.id)}} class="btn btn-primary">Buy Now: 
-                    {#if product.price === 0}
-                        Free!
-                    {:else}
-                        ${product.price.toFixed(2)}
-                    {/if}
-                </button>
-              </div>
-            </div>
-          </div>
-          
+            <Product {product} bind:purchasing></Product>
         {/each}
     </div>
 </div>
@@ -62,6 +28,11 @@
 
 <style lang="postcss">
     :global(body) {
-        @apply bg-green-500 min-h-screen;
+        @apply  min-h-screen;
+    }
+
+    .products-wrapper {
+        @apply flex flex-col justify-center;
+        min-height: calc(100vh - 4rem);
     }
 </style>

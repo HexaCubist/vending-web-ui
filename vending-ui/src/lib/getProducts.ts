@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { env } from '$env/dynamic/private';
 
-function getPrice(product: Stripe.Product): Number {
+export function getPrice(product: Stripe.Product): Number {
 	if (product.default_price) {
 		const price = product.default_price;
 		if (typeof price === 'string') {
@@ -14,7 +14,16 @@ function getPrice(product: Stripe.Product): Number {
 	}
 }
 
-export default async function get(STRIPE_KEY: string) {
+export type VendableProduct = {
+	id: string;
+	name: string;
+	description: string | null;
+	price: number;
+	image?: string;
+	shelf_loc: string;
+};
+
+export default async function getProducts(STRIPE_KEY: string) {
 	const stripe = new Stripe(STRIPE_KEY, {
 		apiVersion: '2022-11-15'
 	});
@@ -40,6 +49,6 @@ export default async function get(STRIPE_KEY: string) {
 			price: getPrice(product),
 			image: product.images[0],
 			shelf_loc: product.metadata.shelf_loc
-		};
+		} as VendableProduct;
 	});
 }
