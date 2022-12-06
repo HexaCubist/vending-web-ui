@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { error, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
+import { addFreeQueueItem } from '$lib/freeStore';
 
 export const GET: RequestHandler = async ({ url, params }) => {
 	if (!env.STRIPE_KEY) {
@@ -23,6 +24,8 @@ export const GET: RequestHandler = async ({ url, params }) => {
 	// Check if the price is free
 	const price = await stripe.prices.retrieve(priceID);
 	if (price.unit_amount === 0) {
+		const product = await stripe.products.retrieve(params.prod_id);
+		addFreeQueueItem(product);
 		throw redirect(303, `/checkout/${params.prod_id}/success`);
 	} else {
 		const success_url = new URL(url);

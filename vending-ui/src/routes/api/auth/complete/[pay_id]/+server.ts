@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { error, json, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
+import { removeQueueItem } from '$lib/queueManager';
 
 export const prerender = false;
 
@@ -14,16 +15,6 @@ export const POST: RequestHandler = async ({ params }) => {
 		return new Response('No Stripe key found', { status: 500 });
 	}
 
-	const stripe = new Stripe(env.STRIPE_KEY, {
-		apiVersion: '2022-11-15'
-	});
-
-	const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId);
-
-	if (paymentIntent.status === 'succeeded') {
-		return json({ success: true });
-	} else {
-		// await stripe.paymentIntents.cancel(paymentIntentId);
-		return json({ success: false });
-	}
+	const status = await removeQueueItem(env.STRIPE_KEY, paymentIntentId);
+	return json(status);
 };

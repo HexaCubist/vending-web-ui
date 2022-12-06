@@ -13,7 +13,9 @@ export const load: PageServerLoad = async ({ params }) => {
 		apiVersion: '2022-11-15'
 	});
 
-	const product = await stripe.products.retrieve(params.prod_id);
+	const product = await stripe.products.retrieve(params.prod_id, {
+		expand: ['default_price']
+	});
 	return {
 		product: {
 			name: product.name,
