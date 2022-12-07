@@ -18,40 +18,48 @@ export const load: PageServerLoad = async ({ params }) => {
 	});
 	let startOfMonth = new Date();
 	startOfMonth.setDate(1);
-	const completedPayments = await stripe.paymentIntents.search({
+	const completedPayments = stripe.paymentIntents.search({
 		query: `status:'succeeded' AND created>${Math.floor(startOfMonth.getTime() / 1000)}`,
 		limit: 100,
 		expand: ['total_count']
 	});
-	const totalValue =
-		completedPayments.data.reduce((acc, payment) => {
-			return acc + payment.amount;
-		}, 0) / 100;
-	const topItems = await completedPayments.data.reduce(async (accPromise, payment) => {
-		const acc = await accPromise;
-		const item = payment.metadata.product_id;
-		if (!item) return acc;
-		if (acc[item]) {
-			acc[item].count++;
-			acc[item].total += payment.amount / 100;
-		} else {
-			const product = await stripe.products.retrieve(item);
-			acc[item] = {
-				count: 1,
-				total: payment.amount / 100,
-				product_name: product.name
-			};
-		}
-		return acc;
-	}, Promise.resolve({} as { [key: string]: { count: number; total: number; product_name: string } }));
+	const totalValue = completedPayments.then(
+		(cp) =>
+			cp.data.reduce((acc, payment) => {
+				return acc + payment.amount;
+			}, 0) / 100
+	);
+	const topItems = completedPayments
+		.then((cp) =>
+			cp.data.reduce(async (accPromise, payment) => {
+				const acc = await accPromise;
+				const item = payment.metadata.product_id;
+				if (!item) return acc;
+				if (acc[item]) {
+					acc[item].count++;
+					acc[item].total += payment.amount / 100;
+				} else {
+					const product = await stripe.products.retrieve(item);
+					acc[item] = {
+						count: 1,
+						total: payment.amount / 100,
+						product_name: product.name
+					};
+				}
+				return acc;
+			}, Promise.resolve({} as { [key: string]: { count: number; total: number; product_name: string } }))
+		)
+		.then((topItems) => Object.values(topItems).sort((a, b) => b.count - a.count));
 	return {
-		products: await getProducts(env.STRIPE_KEY),
-		queue: await getQueue(env.STRIPE_KEY),
-		month: {
-			completedPayments: completedPayments.total_count,
-			totalValue: totalValue,
-			topItems: Object.values(topItems).sort((a, b) => b.count - a.count)
-		}
+		products: getProducts(env.STRIPE_KEY),
+		queue: getQueue(env.STRIPE_KEY),
+		month: Promise.all([completedPayments, totalValue, topItems]).then(
+			([completedPayments, totalValue, topItems]) => ({
+				completedPayments: completedPayments.total_count,
+				totalValue: totalValue,
+				topItems: Object.values(topItems).sort((a, b) => b.count - a.count)
+			})
+		)
 	};
 };
 

@@ -1,11 +1,13 @@
 import Stripe from 'stripe';
 import { env } from '$env/dynamic/private';
 
-export function getPrice(product: Stripe.Product): Number {
+export function getPrice(product: Stripe.Product): number | null {
 	if (product.default_price) {
 		const price = product.default_price;
 		if (typeof price === 'string') {
 			return 0;
+		} else if (price.unit_amount === null) {
+			return null;
 		} else {
 			return price.unit_amount ? price.unit_amount / 100 : 0;
 		}
@@ -18,7 +20,7 @@ export type VendableProduct = {
 	id: string;
 	name: string;
 	description: string | null;
-	price: number;
+	price: number | null;
 	image?: string;
 	shelf_loc: string;
 };
@@ -41,7 +43,7 @@ export default async function getProducts(STRIPE_KEY: string) {
 		return vendable && (is_free || has_link);
 	});
 
-	return vendable_products.map((product) => {
+	const unsorted = vendable_products.map((product) => {
 		return {
 			id: product.id,
 			name: product.name,
@@ -51,4 +53,5 @@ export default async function getProducts(STRIPE_KEY: string) {
 			shelf_loc: product.metadata.shelf_loc
 		} as VendableProduct;
 	});
+	return unsorted.sort((a, b) => a.shelf_loc.localeCompare(b.shelf_loc));
 }

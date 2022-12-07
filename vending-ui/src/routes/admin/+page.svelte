@@ -176,12 +176,12 @@
                                     {/if}
                                     <div>
                                         <p class="font-bold">{product.name}</p>
-                                        <p class="text-sm text-gray-600 truncate">{product.description || ""}</p>
+                                        <p class="text-sm text-gray-600 max-w-xs truncate">{product.description || ""}</p>
                                     </div>
                                 </div>
                             </td>
                             <td>{product.shelf_loc}</td>
-                            <td>${product.price.toFixed(2)}</td>
+                            <td>${product.price === null ? "Pay what you want" : product.price.toFixed(2)}</td>
                             <td>
                                 <label for={`product-actions-edit-${product.id}`} class="btn btn-ghost btn-xs">Edit</label>
                             </td>
@@ -203,7 +203,7 @@
                                         </label>
                                         <label class="input-group">
                                             <span>$</span>
-                                            <input id={`product-edit-${product.id}-name`} type="text" required placeholder="0.00" class="input input-bordered" value={product.price.toFixed(2)}/>
+                                            <input id={`product-edit-${product.id}-name`} type="text" required placeholder="0.00" class="input input-bordered"/>
                                         </label>                                        
                                     </div>
                                     <div class="submit">

@@ -36,6 +36,8 @@
         <button on:click={()=>{purchase(product.id)}} class="btn btn-primary btn-outline btn-sm">
             {#if product.price === 0}
                 Dispense (Free)!
+            {:else if product.price === null}
+                Buy now: Pay what you want
             {:else}
                 Buy Now: ${product.price.toFixed(2)}
             {/if}
