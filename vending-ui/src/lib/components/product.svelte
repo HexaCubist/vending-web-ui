@@ -37,9 +37,9 @@
             {#if product.price === 0}
                 Dispense (Free)!
             {:else if product.price === null}
-                Buy now: Pay what you want
+                Buy now: Name a price
             {:else}
-                Buy Now: ${product.price.toFixed(2)}
+                Buy Now: {product.price.toLocaleString("en-NZ",{style: 'currency', currency: "NZD"})}
             {/if}
         </button>
       </div>

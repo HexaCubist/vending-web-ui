@@ -41,13 +41,14 @@ export const load: PageServerLoad = async ({ params }) => {
 				} else {
 					const product = await stripe.products.retrieve(item);
 					acc[item] = {
+						product_id: item,
 						count: 1,
 						total: payment.amount / 100,
 						product_name: product.name
 					};
 				}
 				return acc;
-			}, Promise.resolve({} as { [key: string]: { count: number; total: number; product_name: string } }))
+			}, Promise.resolve({} as { [key: string]: { count: number; total: number; product_name: string; product_id: string } }))
 		)
 		.then((topItems) => Object.values(topItems).sort((a, b) => b.count - a.count));
 	return {

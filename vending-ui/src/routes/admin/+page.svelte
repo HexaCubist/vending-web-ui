@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { QueueItem } from '$lib/queueManager';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import { stringify } from 'postcss';
     import type { PageData } from './$types';
 
     export let data: PageData;
@@ -61,16 +62,16 @@
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Total Sales (Month)</div>
-                    <div class="stat-value">${data.month?.totalValue.toFixed(2)}</div>
+                    <div class="stat-value">{data.month?.totalValue.toLocaleString("en-NZ",{style: 'currency', currency: "NZD"})}</div>
                     <div class="stat-desc">
                         From {data.month?.completedPayments} purchases this month
                     </div>
                 </div>
                 <div class="stat">
-                    <div class="stat-title">Top Product</div>
+                    <div class="stat-title">Most Sold</div>
                     <div class="stat-value">{data.month?.topItems[0].product_name}</div>
                     <div class="stat-desc">
-                        From {data.month?.topItems[0].count} purchases this month totalling ${data.month?.topItems[0].total.toFixed(2)}
+                        From {data.month?.topItems[0].count} purchases this month totalling {data.month?.topItems[0].total.toLocaleString("en-NZ",{style: 'currency', currency: "NZD"})}
                     </div>
                 </div>
             </div>
@@ -153,6 +154,7 @@
                             <th>Product</th>
                             <th>Shelf Location</th>
                             <th>price</th>
+                            <th>Sold this month</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -181,7 +183,8 @@
                                 </div>
                             </td>
                             <td>{product.shelf_loc}</td>
-                            <td>${product.price === null ? "Pay what you want" : product.price.toFixed(2)}</td>
+                            <td>{product.price === null ? "Any" : product.price.toLocaleString("en-NZ",{style: 'currency', currency: "NZD"})}</td>
+                            <td>{data.month.topItems.find(item=>item.product_id === product.id)?.total.toLocaleString("en-NZ",{style: 'currency', currency: "NZD"}) || "$0.00"}</td>
                             <td>
                                 <label for={`product-actions-edit-${product.id}`} class="btn btn-ghost btn-xs">Edit</label>
                             </td>
