@@ -115,5 +115,30 @@ export const actions: Actions = {
 			queue: await getQueue(env.STRIPE_KEY),
 			products: await getProducts(env.STRIPE_KEY)
 		};
+	},
+	pressKeypad: async ({ request }) => {
+		const data = await request.formData();
+		const shelf_loc = data.get('shelf_loc');
+		addFreeQueueItem({
+			id: 'ManualVend',
+			object: 'product',
+			active: true,
+			attributes: null,
+			created: 0,
+			description: null,
+			images: [],
+			livemode: true,
+			metadata: {
+				shelf_loc: shelf_loc?.toString() || '',
+				vendable: 'true'
+			},
+			name: `Button ${shelf_loc}`,
+			package_dimensions: null,
+			shippable: null,
+			tax_code: null,
+			type: 'good',
+			updated: 0,
+			url: null
+		});
 	}
 };
