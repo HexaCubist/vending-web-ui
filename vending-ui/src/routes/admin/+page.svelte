@@ -186,15 +186,18 @@
 	<div class="card bg-base-100 shadow-xl mx-auto max-w-screen-lg w-full">
 		<div class="card-body">
 			<h2 class="text-4xl font-bold">Manually Vend items</h2>
-			<div class="grid grid-cols-3 grid-rows-3 w-fit mx-auto p-4 gap-2">
-				{#each { length: 9 } as _, i}
-					<input type="hidden" name="shelf_loc" value={i + 1} />
-					<button class:loading type="submit" class="btn btn-square aspect-square">
-						{i + 1}
-					</button>
-				{/each}
-				<form action="?/pressKeypad" method="post" use:enhance={productEnhanceHandler} />
-			</div>
+			<form action="?/pressKeypad" method="post" use:enhance={productEnhanceHandler}>
+				<div class="form-control">
+					<input
+						class="input input-bordered w-full max-w-xs"
+						type="number"
+						min="11"
+						max="99"
+						name="shelf_loc"
+					/>
+				</div>
+				<button class:loading type="submit" class="btn mt-3"> Submit </button>
+			</form>
 		</div>
 	</div>
 	{#if data.products}
