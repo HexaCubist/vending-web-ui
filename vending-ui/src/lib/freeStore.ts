@@ -5,9 +5,14 @@ import type Stripe from 'stripe';
 import type { QueueItem } from '$lib/queueManager';
 import { EntityId } from 'redis-om';
 
-const redis = createClient();
-redis.on('error', (err) => console.log('Redis Client Error', err));
-await redis.connect();
+const redis = createClient({
+	url: env.REDIS_URL
+});
+try {
+	await redis.connect();
+} catch (err) {
+	console.log('Redis Connection Error', err);
+}
 
 const purchaseSchema = new Schema('Purchase', {
 	product_id: { type: 'string', caseSensitive: true },

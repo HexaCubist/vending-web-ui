@@ -33,6 +33,7 @@ const authorization: Handle = async ({ event, resolve }) => {
 
 export const handle: Handle = sequence(
 	SvelteKitAuth({
+		trustHost: true,
 		providers: [
 			GoogleProvider({
 				clientId: env.GOOGLE_ID,

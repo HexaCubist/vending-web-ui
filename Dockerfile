@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:18 AS dev
+FROM node:18-bullseye AS dev
 
 WORKDIR /usr/src/app
 COPY ["vending-ui/package.json", "vending-ui/package-lock.json*", "vending-ui/npm-shrinkwrap.json*", "vending-ui/yarn.lock", "./"]
@@ -8,6 +8,7 @@ COPY ./vending-ui .
 
 ARG REDIS_URL=${REDIS_URL}
 ENV REDIS_URL=${REDIS_URL}
+RUN echo $REDIS_URL
 RUN yarn build
 
 ENV STRIPE_KEY=${STRIPE_KEY}
@@ -16,6 +17,7 @@ ENV GOOGLE_SECRET=${GOOGLE_SECRET}
 ENV AUTH_SECRET=${AUTH_SECRET}
 ENV API_KEY=${API_KEY}
 ENV ALLOWED_EMAILS=${ALLOWED_EMAILS}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
 
 EXPOSE 3000
 CMD ["node", "build"]
