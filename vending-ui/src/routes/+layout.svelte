@@ -26,7 +26,9 @@
 		{/if}
 	</div>
 	<div class="page-title">
-		<h1>Vending Machine</h1>
+		<h1>
+			<a href="/">Vending Machine</a>
+		</h1>
 	</div>
 </header>
 <main class="bg-brand-gradient-light dark:bg-brand-gradient-dark">
@@ -54,9 +56,10 @@
 
 <style lang="postcss">
 	.brand-ribbon {
-		@apply h-2 w-full absolute top-0 left-0 z-30;
+		@apply h-2 w-full sticky top-0 left-0 z-30;
 	}
 	header {
-		@apply bg-base-100 flex items-center justify-between p-4 pt-5 z-20 relative;
+		@apply bg-base-100 flex items-center justify-between p-4 pt-5 z-20;
+		@apply sticky top-0;
 	}
 </style>

@@ -2,37 +2,53 @@
 	import { goto } from '$app/navigation';
 	import Product from '$lib/components/product.svelte';
 	import { slide } from 'svelte/transition';
-    import type { PageData } from './$types';
+	import type { PageData } from './$types';
+	import ProductList from '$lib/components/productList.svelte';
 
-    export let data: PageData;
+	export let data: PageData;
 
-    let purchasing = false;
+	let purchasing = false;
 </script>
 
-<div class="products-wrapper py-10">
-    <div class="products flex flex-wrap justify-center gap-6 mx-auto max-w-screen-lg">
-        {#each data.products as product}
-            <Product {product} bind:purchasing></Product>
-        {/each}
-    </div>
+<div class="hero bg-base-100">
+	<div class="hero-content text-center">
+		<div class="max-w-2xl">
+			<h2 class="text-5xl font-bold">Vending Machine!</h2>
+			<p class="py-6 text-justify">
+				Welcome to the Maker Club's vending machine. We're providing a space for makers to sell
+				things they've created. Items here are sold with 100% of proceeds after transaction fees
+				going to the creator, charity, or a university club.
+				<a href="https://makeuoa.nz/wares/" class="font-bold hover:underline">Are you a maker?</a> Consider
+				selling your creations too!
+			</p>
+			<a href="#items" class="btn btn-primary">
+				View items
+
+				<!-- Source: Feather Icons -->
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9" /></svg
+				>
+			</a>
+			<a target="_blank" href="https://makeuoa.nz/wares/" class="btn btn-ghost">Apply to sell</a>
+		</div>
+	</div>
 </div>
 
-<input type="checkbox" id="purchase-modal" bind:checked={purchasing} class="modal-toggle" />
-<div class="modal modal-bottom">
-    <div class="modal-box text-center">
-        <h3 class="font-bold text-lg">Redirecting to checkout...</h3>
-        <p class="max-w-prose mx-auto">You will be taken to the checkout shortly. We use Stripe for payments, and will only charge your card when the machine confirms it has given you the item.</p>
-        <progress class="progress w-full mt-5 mx-auto"></progress>
-    </div>    
+<div id="items">
+	<ProductList products={data.products} bind:purchasing />
 </div>
 
 <style lang="postcss">
-    :global(body) {
-        @apply  min-h-screen;
-    }
-
-    .products-wrapper {
-        @apply flex flex-col justify-center;
-        min-height: calc(100vh - 4rem);
-    }
+	:global(body) {
+		@apply min-h-screen;
+	}
 </style>

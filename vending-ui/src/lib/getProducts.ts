@@ -23,6 +23,7 @@ export type VendableProduct = {
 	price: number | null;
 	image?: string;
 	shelf_loc: string;
+	indicator?: string;
 };
 
 export default async function getProducts(STRIPE_KEY: string) {
@@ -50,7 +51,8 @@ export default async function getProducts(STRIPE_KEY: string) {
 			description: product.description,
 			price: getPrice(product),
 			image: product.images[0],
-			shelf_loc: product.metadata.shelf_loc
+			shelf_loc: product.metadata.shelf_loc,
+			indicator: product.metadata.indicator
 		} as VendableProduct;
 	});
 	return unsorted.sort((a, b) => a.shelf_loc.localeCompare(b.shelf_loc));
