@@ -18,8 +18,8 @@ import "../app.postcss";</script>
         <h1>Vending Machine</h1>
     </div>
 </header>
-<main class="bg-brand-gradient-light">
-    <slot></slot>
+<main class="light:bg-brand-gradient-light dark:bg-brand-gradient-dark">
+	<slot />
 </main>
 <footer class="footer p-10 bg-neutral text-neutral-content">
     <div>

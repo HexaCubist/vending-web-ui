@@ -38,7 +38,7 @@
 				on:click={() => {
 					purchase(product.id);
 				}}
-				class="btn btn-primary btn-outline btn-sm"
+				class="btn light:btn-primary btn-outline btn-sm"
 			>
 				{#if product.price === 0}
 					Dispense (Free)!
