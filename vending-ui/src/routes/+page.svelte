@@ -21,24 +21,28 @@
 				<a href="https://makeuoa.nz/wares/" class="font-bold hover:underline">Are you a maker?</a> Consider
 				selling your creations too!
 			</p>
-			<a href="#items" class="btn btn-primary">
-				View items
+			<div class="flex flex-wrap gap-4 justify-center">
+				<a href="#items" class="btn btn-primary">
+					View items
 
-				<!-- Source: Feather Icons -->
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9" /></svg
+					<!-- Source: Feather Icons -->
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9" /></svg
+					>
+				</a>
+				<a target="_blank" rel="noreferrer" href="https://makeuoa.nz/wares/" class="btn btn-outline"
+					>Apply to sell</a
 				>
-			</a>
-			<a target="_blank" href="https://makeuoa.nz/wares/" class="btn btn-ghost">Apply to sell</a>
+			</div>
 		</div>
 	</div>
 </div>
