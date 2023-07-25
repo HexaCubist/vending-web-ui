@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { signIn, signOut } from '@auth/sveltekit/client';
 	import '../app.postcss';
 </script>
 
@@ -25,9 +26,31 @@
 			</a>
 		{/if}
 	</div>
+	<div class="spacer" />
 	<div class="page-title">
 		<h1>Vending Machine</h1>
 	</div>
+	{#if $page.data.session}
+		<div class="account">
+			<button
+				on:click={() =>
+					signOut({
+						callbackUrl: '/'
+					})}
+				class="btn btn-ghost">Sign out</button
+			>
+		</div>
+	{:else}
+		<div class="account">
+			<button
+				on:click={() =>
+					signIn(undefined, {
+						callbackUrl: '/admin'
+					})}
+				class="btn btn-ghost">Sign in</button
+			>
+		</div>
+	{/if}
 </header>
 <main class="bg-brand-gradient-light dark:bg-brand-gradient-dark">
 	<slot />
@@ -57,6 +80,12 @@
 		@apply h-2 w-full absolute top-0 left-0 z-30;
 	}
 	header {
-		@apply bg-base-100 flex items-center justify-between p-4 pt-5 z-20 relative;
+		@apply bg-base-100 flex items-center justify-start gap-4 p-4 pt-5 z-20 relative;
+	}
+	header .spacer {
+		@apply flex-grow;
+	}
+	header .account {
+		@apply flex items-center gap-4;
 	}
 </style>
