@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:16.15.1 AS dev
+FROM node:18 AS dev
 
 WORKDIR /usr/src/app
 COPY ["vending-ui/package.json", "vending-ui/package-lock.json*", "vending-ui/npm-shrinkwrap.json*", "vending-ui/yarn.lock", "./"]

@@ -1,26 +1,21 @@
 import { env } from '$env/dynamic/private';
-import { Client } from 'redis-om';
-import { Entity, Schema } from 'redis-om';
+import { createClient } from 'redis';
+import { Repository, Schema } from 'redis-om';
 import type Stripe from 'stripe';
 import type { QueueItem } from '$lib/queueManager';
+import { EntityId } from 'redis-om';
 
-let client = await new Client().open(env.REDIS_URL);
+const redis = createClient();
+redis.on('error', (err) => console.log('Redis Client Error', err));
+await redis.connect();
 
-interface Purchase {
-	product_id: string;
-	shelf_loc: number;
-	quantity: number;
-}
-
-class Purchase extends Entity {}
-
-const purchaseSchema = new Schema(Purchase, {
+const purchaseSchema = new Schema('Purchase', {
 	product_id: { type: 'string', caseSensitive: true },
 	shelf_loc: { type: 'number' },
 	quantity: { type: 'number' }
 });
 
-const purchaseRepository = client.fetchRepository(purchaseSchema);
+const purchaseRepository = new Repository(purchaseSchema, redis);
 purchaseRepository.createIndex();
 
 export const ttlInSeconds = 2 * 60 * 60; // 2 hours
@@ -28,22 +23,28 @@ export const maxItems = 1000;
 
 export async function getFreeQueue(): Promise<QueueItem[]> {
 	const queueItems = await purchaseRepository.search().return.all();
-	return queueItems.map((item) => ({
-		id: item.entityId,
-		product_id: item.product_id,
-		shelf_loc: item.shelf_loc,
-		quantity: item.quantity,
-		free: true
-	}));
+	return queueItems.map(
+		(item) =>
+			({
+				id: item[EntityId],
+				product_id: item.product_id,
+				shelf_loc: item.shelf_loc,
+				quantity: item.quantity,
+				free: true
+			} as QueueItem)
+	);
 }
 
 export async function addFreeQueueItem(product: Stripe.Product): Promise<void> {
-	const purchase = await purchaseRepository.createAndSave({
+	const purchase = await purchaseRepository.save({
 		product_id: product.id,
 		shelf_loc: parseInt(product.metadata.shelf_loc),
 		quantity: 1
 	});
-	await purchaseRepository.expire(purchase.entityId, ttlInSeconds);
+	console.log('Added free queue item', purchase[EntityId]);
+	if (purchase[EntityId] && typeof purchase[EntityId] === 'string') {
+		await purchaseRepository.expire(purchase[EntityId], ttlInSeconds);
+	}
 }
 
 export async function removeFreeQueueItem(paymentIntentId: string): Promise<void> {
