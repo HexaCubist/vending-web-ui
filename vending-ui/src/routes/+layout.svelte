@@ -49,7 +49,7 @@
 					signIn(undefined, {
 						callbackUrl: '/admin'
 					})}
-				class="btn btn-ghost">Sign in</button
+				class="btn btn-ghost">Admin</button
 			>
 		</div>
 	{/if}
