@@ -41,10 +41,8 @@
 	</div>
 	<div>
 		<span class="footer-title">Creators</span>
-		<a class="link link-hover" href="https://makeuoa.nz/about/creators">Learn more</a>
-		<a class="link link-hover" href="https://makeuoa.nz/about/creators/join"
-			>Get your stuff in here!</a
-		>
+		<a class="link link-hover" href="https://makeuoa.nz/about-creators">Learn more</a>
+		<a class="link link-hover" href="https://makeuoa.nz/wares/">Get your stuff in here!</a>
 	</div>
 	<div>
 		<span class="footer-title">Maker Space</span>
