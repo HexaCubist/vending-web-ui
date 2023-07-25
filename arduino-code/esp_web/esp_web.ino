@@ -6,6 +6,7 @@
 
 const char* ssid = SSID;
 const char* password = PASSWORD;
+const char* api_key = API_KEY;
 
 
 //Your Domain name with URL path or IP address with path
@@ -86,7 +87,7 @@ String httpGETRequest(const String url) {
   http.begin(client, url);
   
   // If you need Node-RED/server authentication, insert user and password below
-  //http.setAuthorization("REPLACE_WITH_SERVER_USERNAME", "REPLACE_WITH_SERVER_PASSWORD");
+  http.setAuthorization("API_KEY", API_KEY);
   
   // Send HTTP POST request
   int httpResponseCode = http.GET();
@@ -117,7 +118,7 @@ String httpPOSTRequest(const String url) {
   http.begin(client, url);
   
   // If you need Node-RED/server authentication, insert user and password below
-  //http.setAuthorization("REPLACE_WITH_SERVER_USERNAME", "REPLACE_WITH_SERVER_PASSWORD");
+  http.setAuthorization("API_KEY", API_KEY);
   
   // Send HTTP POST request
   int httpResponseCode = http.POST("");
