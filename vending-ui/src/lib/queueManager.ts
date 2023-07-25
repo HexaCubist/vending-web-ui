@@ -1,5 +1,4 @@
 import Stripe from 'stripe';
-import { error, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { getFreeQueue, removeFreeQueueItem } from './freeStore';
 

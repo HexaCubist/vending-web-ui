@@ -40,7 +40,7 @@
 			<div class="metadata overflow-x-auto">
 				<table class="table w-full">
 					<tbody>
-						<tr>
+						<tr class="border-b-0">
 							<th>Shelf Location</th>
 							<td>{product.shelf_loc || 'Unknown!'}</td>
 						</tr>

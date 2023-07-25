@@ -1,6 +1,6 @@
 import { SvelteKitAuth } from '@auth/sveltekit';
 import GoogleProvider from '@auth/core/providers/google';
-import { GOOGLE_ID, GOOGLE_SECRET, API_KEY, ALLOWED_EMAILS } from '$env/dynamic/private';
+import { env } from '$env/dynamic/private';
 import { sequence } from '@sveltejs/kit/hooks';
 import { redirect, type Handle } from '@sveltejs/kit';
 
@@ -16,7 +16,7 @@ const authorization: Handle = async ({ event, resolve }) => {
 	// 	const b64auth = (auth || '').split(' ')[1] || '';
 	// 	const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
 
-	// 	if (!(login && password && login === 'API_KEY' && password === API_KEY)) {
+	// 	if (!(login && password && login === 'API_KEY' && password === env.API_KEY)) {
 	// 		return new Response('Not authorized', {
 	// 			status: 401,
 	// 			headers: {
@@ -35,8 +35,8 @@ export const handle: Handle = sequence(
 	SvelteKitAuth({
 		providers: [
 			GoogleProvider({
-				clientId: GOOGLE_ID,
-				clientSecret: GOOGLE_SECRET
+				clientId: env.GOOGLE_ID,
+				clientSecret: env.GOOGLE_SECRET
 				// authorization: {
 				// 	params: {
 				// 		prompt: 'consent',
@@ -51,7 +51,7 @@ export const handle: Handle = sequence(
 				return !!(
 					profile?.email_verified &&
 					profile.email &&
-					new Set(ALLOWED_EMAILS.split(',')).has(profile.email)
+					new Set(env.ALLOWED_EMAILS.split(',')).has(profile.email)
 				);
 			}
 		}

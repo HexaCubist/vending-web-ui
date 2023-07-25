@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { Client } from 'redis-om';
-import { Entity, Schema, Repository } from 'redis-om';
+import { Entity, Schema } from 'redis-om';
 import type Stripe from 'stripe';
 import type { QueueItem } from '$lib/queueManager';
 
