@@ -6,8 +6,7 @@ COPY ["vending-ui/package.json", "vending-ui/package-lock.json*", "vending-ui/np
 RUN yarn
 COPY ./vending-ui .
 
-ENV REDIS_URL=$REDIS_URL
-
+ARG REDIS_URL=$REDIS_URL
 RUN yarn build
 
 ENV STRIPE_KEY=$STRIPE_KEY
