@@ -5,11 +5,19 @@
 
 	export let product: VendableProduct;
 	export let purchasing = false;
+	export let freeModal: HTMLDialogElement | undefined;
 
-	const purchase = (product: string): void => {
+	const purchase = (productId: string): void => {
+		if (product.price === 0) {
+			freeModal?.showModal();
+			freeModal?.querySelector('button#confirm')?.addEventListener('click', () => {
+				purchasing = true;
+				goto(`/checkout/${productId}`);
+			});
+			return;
+		}
 		purchasing = true;
-		console.log(product);
-		goto(`/checkout/${product}`);
+		goto(`/checkout/${productId}`);
 	};
 </script>
 
