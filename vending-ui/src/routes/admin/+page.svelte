@@ -2,7 +2,6 @@
 	import { enhance } from '$app/forms';
 	import type { QueueItem } from '$lib/queueManager';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { stringify } from 'postcss';
 	import type { PageData } from './$types';
 
 	export let data: PageData;

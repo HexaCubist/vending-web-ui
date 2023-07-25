@@ -9,6 +9,7 @@ COPY ./vending-ui .
 RUN yarn build
 
 ENV STRIPE_KEY=$STRIPE_KEY
+ENV REDIS_URL=$REDIS_URL
 
 EXPOSE 3000
 CMD ["node", "build"]
