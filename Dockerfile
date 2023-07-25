@@ -6,10 +6,11 @@ COPY ["vending-ui/package.json", "vending-ui/package-lock.json*", "vending-ui/np
 RUN yarn
 COPY ./vending-ui .
 
+ENV REDIS_URL=$REDIS_URL
+
 RUN yarn build
 
 ENV STRIPE_KEY=$STRIPE_KEY
-ENV REDIS_URL=$REDIS_URL
 ENV GOOGLE_ID=$GOOGLE_ID
 ENV GOOGLE_SECRET=$GOOGLE_SECRET
 ENV AUTH_SECRET=$AUTH_SECRET
