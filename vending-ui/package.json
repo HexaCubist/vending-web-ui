@@ -32,6 +32,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@auth/core": "^0.10.0",
+		"@auth/sveltekit": "^0.3.6",
 		"redis-om": "^0.3.6",
 		"stripe": "^11.1.0"
 	}
