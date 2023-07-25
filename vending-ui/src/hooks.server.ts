@@ -1,6 +1,6 @@
 import { SvelteKitAuth } from '@auth/sveltekit';
 import GoogleProvider from '@auth/core/providers/google';
-import { GOOGLE_ID, GOOGLE_SECRET, API_KEY, ALLOWED_EMAILS } from '$env/static/private';
+import { GOOGLE_ID, GOOGLE_SECRET, API_KEY, ALLOWED_EMAILS } from '$env/dynamic/private';
 import { sequence } from '@sveltejs/kit/hooks';
 import { redirect, type Handle } from '@sveltejs/kit';
 
