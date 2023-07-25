@@ -10,21 +10,22 @@ const authorization: Handle = async ({ event, resolve }) => {
 		if (!session) {
 			throw redirect(303, '/auth/signin');
 		}
-	} else if (event.url.pathname.startsWith('/api/auth')) {
-		const auth = event.request.headers.get('Authorization');
-		const b64auth = (auth || '').split(' ')[1] || '';
-		const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
-
-		if (!(login && password && login === 'API_KEY' && password === API_KEY)) {
-			return new Response('Not authorized', {
-				status: 401,
-				headers: {
-					'WWW-Authenticate': 'Basic realm="Vending Machine API", charset="UTF-8"'
-				}
-			});
-		}
-		return resolve(event);
 	}
+	// else if (event.url.pathname.startsWith('/api/auth')) {
+	// 	const auth = event.request.headers.get('Authorization');
+	// 	const b64auth = (auth || '').split(' ')[1] || '';
+	// 	const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+
+	// 	if (!(login && password && login === 'API_KEY' && password === API_KEY)) {
+	// 		return new Response('Not authorized', {
+	// 			status: 401,
+	// 			headers: {
+	// 				'WWW-Authenticate': 'Basic realm="Vending Machine API", charset="UTF-8"'
+	// 			}
+	// 		});
+	// 	}
+	// 	return resolve(event);
+	// }
 
 	// If the request is still here, just proceed as normally
 	return resolve(event);
