@@ -43,7 +43,7 @@
 	{/if}
 	{#if product.tags.has(Tags.featured)}
 		<div
-			class="indicator-item bg-primary w-5 h-5 top-6 right-6 mask mask-heart"
+			class="indicator-item bg-[#ffeb3b] w-5 h-5 top-6 right-6 mask mask-heart"
 			title="Featured!"
 		/>
 	{/if}
