@@ -42,7 +42,10 @@
 		</div>
 	{/if}
 	{#if product.tags.has(Tags.featured)}
-		<div class="indicator-item badge badge-primary">Featured!</div>
+		<div
+			class="indicator-item bg-primary w-5 h-5 top-6 right-6 mask mask-heart"
+			title="Featured!"
+		/>
 	{/if}
 	<div
 		class="card bg-base-100 base-content card-compact w-72 shadow-xl"
