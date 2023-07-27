@@ -35,6 +35,7 @@
 	"dependencies": {
 		"@auth/core": "^0.10.0",
 		"@auth/sveltekit": "^0.3.6",
+		"discord-webhook-node": "^1.1.8",
 		"redis-om": "^0.4.0",
 		"stripe": "^11.1.0"
 	}

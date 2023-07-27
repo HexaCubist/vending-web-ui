@@ -1,6 +1,12 @@
 import Stripe from 'stripe';
 import { env } from '$env/dynamic/private';
 import { getFreeQueue, removeFreeQueueItem } from './freeStore';
+import { Webhook } from 'discord-webhook-node';
+const hook = env.DISCORD_WEBHOOK ? new Webhook(env.DISCORD_WEBHOOK) : null;
+if (hook) {
+	hook.setUsername('Vending Machine');
+	console.log('Discord webhook enabled');
+}
 
 export interface QueueItem {
 	shelf_loc: number;
@@ -60,6 +66,7 @@ export const removeQueueItem = async (
 	const freeQueueItem = freeQueueItems.find((item) => item.id === paymentIntentId);
 	if (freeQueueItem) {
 		await removeFreeQueueItem(paymentIntentId);
+		if (complete) hook?.send(`Dispensed free item from shelf ${freeQueueItem.shelf_loc}`);
 		return { success: true };
 	} else {
 		const stripe = new Stripe(env.STRIPE_KEY, {
@@ -69,11 +76,17 @@ export const removeQueueItem = async (
 		if (complete) {
 			const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId);
 			if (paymentIntent.status === 'succeeded') {
+				hook?.send(
+					`Dispensed "${paymentIntent.metadata.product_name}" from shelf ${paymentIntent.metadata.shelf_loc} and charged card! (Payment ID: ${paymentIntent.id}) `
+				);
 				return { success: true };
 			}
 		} else {
 			const paymentIntent = await stripe.paymentIntents.cancel(paymentIntentId);
 			if (paymentIntent.status === 'canceled') {
+				hook?.send(
+					`Cancelled "${paymentIntent.metadata.product_name}" and refunded card! (Payment ID: ${paymentIntent.id}) `
+				);
 				return { success: true };
 			}
 		}
