@@ -54,6 +54,21 @@
 				for the item by asking a CT in the space to swap it for you.
 			{/if}
 		</p>
+		{#if selectedProduct}
+			<br />
+			<table class="table w-full shadow-md bg-base-content text-base-100 rounded-full">
+				<tbody>
+					<tr class="border-b-0">
+						<th>Shelf Location</th>
+						<td class="text-right">
+							<div class="badge-lg font-bold badge badge-outline">
+								{selectedProduct.shelf_loc || 'Unknown!'}
+							</div></td
+						>
+					</tr>
+				</tbody>
+			</table>
+		{/if}
 		<div class="modal-action">
 			<button class="btn btn-outline">Cancel</button>
 			<button class="btn btn-primary" id="confirm">Confirm</button>
