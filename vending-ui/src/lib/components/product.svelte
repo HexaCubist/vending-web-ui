@@ -1,23 +1,37 @@
 <script lang="ts">
 	import Stripe from 'stripe';
-	import type { VendableProduct } from '$lib/getProducts';
+	import { Tags, type VendableProduct } from '$lib/getProducts';
 	import { goto } from '$app/navigation';
 
 	export let product: VendableProduct;
 	export let purchasing = false;
-	export let freeModal: HTMLDialogElement | undefined;
+	export let freeWarningModal: HTMLDialogElement | undefined;
+	export let headsUpModal: HTMLDialogElement | undefined;
+	export let selectedProduct: VendableProduct | undefined;
 
 	const purchase = (productId: string): void => {
+		selectedProduct = product;
 		if (product.price === 0) {
-			freeModal?.showModal();
-			freeModal?.querySelector('button#confirm')?.addEventListener('click', () => {
+			freeWarningModal?.showModal();
+			freeWarningModal?.querySelector('button#confirm')?.addEventListener('click', () => {
 				purchasing = true;
 				goto(`/checkout/${productId}`);
 			});
 			return;
+		} else if (
+			product.tags.has(Tags.unique) ||
+			product.tags.has(Tags.limited) ||
+			product.tags.has(Tags.token)
+		) {
+			headsUpModal?.showModal();
+			headsUpModal?.querySelector('button#confirm')?.addEventListener('click', () => {
+				purchasing = true;
+				goto(`/checkout/${productId}`);
+			});
+		} else {
+			purchasing = true;
+			goto(`/checkout/${productId}`);
 		}
-		purchasing = true;
-		goto(`/checkout/${productId}`);
 	};
 </script>
 
@@ -26,6 +40,9 @@
 		<div class="indicator-item badge badge-primary">
 			{product.indicator}
 		</div>
+	{/if}
+	{#if product.tags.has(Tags.featured)}
+		<div class="indicator-item badge badge-primary">Featured!</div>
 	{/if}
 	<div
 		class="card bg-base-100 base-content card-compact w-72 shadow-xl"

@@ -1,23 +1,24 @@
 <script lang="ts">
 	import Product from '$lib/components/product.svelte';
-	import type { VendableProduct } from '$lib/getProducts';
+	import { Tags, type VendableProduct } from '$lib/getProducts';
 
 	export let products: VendableProduct[];
 
 	export let purchasing = false;
 
 	let freeWarningModal: HTMLDialogElement;
+	let headsUpModal: HTMLDialogElement;
+	let selectedProduct: VendableProduct | undefined;
 </script>
 
 <div class="products-wrapper py-10">
 	<div class="products flex flex-wrap justify-center gap-6 mx-auto max-w-screen-lg">
 		{#each products as product}
-			<Product {product} bind:purchasing freeModal={freeWarningModal} />
+			<Product {product} bind:purchasing {freeWarningModal} {headsUpModal} bind:selectedProduct />
 		{/each}
 	</div>
 </div>
 
-<!-- Open the modal using ID.showModal() method -->
 <dialog bind:this={freeWarningModal} class="modal">
 	<form method="dialog" class="modal-box">
 		<h3 class="font-bold text-lg">Dispense free product?</h3>
@@ -25,6 +26,33 @@
 			Are you sure you want to do this? Getting a free product will immediately dispense it from the
 			vending machine. <strong>We're relying on good-will to keep these items in the machine</strong
 			>, so make sure you're by the vending machine before you hit confirm 😊
+		</p>
+		<div class="modal-action">
+			<button class="btn btn-outline">Cancel</button>
+			<button class="btn btn-primary" id="confirm">Confirm</button>
+		</div>
+	</form>
+</dialog>
+<dialog bind:this={headsUpModal} class="modal">
+	<form method="dialog" class="modal-box">
+		<h3 class="font-bold text-lg">Heads up!</h3>
+		<p class="pt-4">
+			{#if selectedProduct?.tags.has(Tags.unique)}
+				This slot dispenses unique or one-off items. This means that what you're about to buy might
+				not match the photo exactly! Take a quick look in the machine to see what you're about to
+				get, and to ensure that there's some left.
+			{:else if selectedProduct?.tags.has(Tags.limited)}
+				Before you checkout, Take a quick look in the machine to see what you're about to get, and
+				to ensure that there's some left!
+			{/if}
+			{#if selectedProduct?.tags.has(Tags.token)}
+				{#if selectedProduct?.tags.has(Tags.unique) || selectedProduct?.tags.has(Tags.limited)}
+					<br />
+					<br />
+				{/if}
+				<strong>This item uses our token system!</strong> You will be given a token that you can exchange
+				for the item by asking a CT in the space to swap it for you.
+			{/if}
 		</p>
 		<div class="modal-action">
 			<button class="btn btn-outline">Cancel</button>

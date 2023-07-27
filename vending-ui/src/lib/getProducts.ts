@@ -1,5 +1,4 @@
 import Stripe from 'stripe';
-import { env } from '$env/dynamic/private';
 
 export function getPrice(product: Stripe.Product): number | null {
 	if (product.default_price) {
@@ -16,6 +15,13 @@ export function getPrice(product: Stripe.Product): number | null {
 	}
 }
 
+export enum Tags {
+	unique,
+	token,
+	limited,
+	featured
+}
+
 export type VendableProduct = {
 	id: string;
 	name: string;
@@ -24,6 +30,7 @@ export type VendableProduct = {
 	image?: string;
 	shelf_loc: string;
 	indicator?: string;
+	tags: Set<Tags>;
 };
 
 export default async function getProducts(STRIPE_KEY: string) {
@@ -45,6 +52,15 @@ export default async function getProducts(STRIPE_KEY: string) {
 	});
 
 	const unsorted = vendable_products.map((product) => {
+		const tags = Object.entries(product.metadata)
+			.filter(([key, value]) => {
+				if (value !== 'true') return;
+				if (!Object.keys(Tags).includes(key)) return;
+				return key;
+			})
+			.map(([key]) => {
+				return Tags[key as keyof typeof Tags];
+			});
 		return {
 			id: product.id,
 			name: product.name,
@@ -52,8 +68,16 @@ export default async function getProducts(STRIPE_KEY: string) {
 			price: getPrice(product),
 			image: product.images[0],
 			shelf_loc: product.metadata.shelf_loc,
-			indicator: product.metadata.indicator
+			indicator: product.metadata.indicator,
+			tags: new Set(tags)
 		} as VendableProduct;
 	});
-	return unsorted.sort((a, b) => a.shelf_loc.localeCompare(b.shelf_loc));
+	return unsorted
+		.sort((a, b) => a.shelf_loc.localeCompare(b.shelf_loc))
+		.reduce((acc: VendableProduct[], prod) => {
+			if (prod.tags.has(Tags.featured)) {
+				return [prod, ...acc];
+			}
+			return [...acc, prod];
+		}, []);
 }
