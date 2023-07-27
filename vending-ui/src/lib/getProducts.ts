@@ -74,7 +74,7 @@ export default async function getProducts(STRIPE_KEY: string) {
 	});
 	return unsorted
 		.sort((a, b) => a.shelf_loc.localeCompare(b.shelf_loc))
-		.reduce((acc: VendableProduct[], prod) => {
+		.reduceRight((acc: VendableProduct[], prod) => {
 			if (prod.tags.has(Tags.featured)) {
 				return [prod, ...acc];
 			}
