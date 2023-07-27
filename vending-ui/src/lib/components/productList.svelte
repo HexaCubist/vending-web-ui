@@ -8,7 +8,10 @@
 
 	let freeWarningModal: HTMLDialogElement;
 	let headsUpModal: HTMLDialogElement;
+	let checkoutModal: HTMLDialogElement;
 	let selectedProduct: VendableProduct | undefined;
+
+	$: if (purchasing) checkoutModal.showModal();
 </script>
 
 <div class="products-wrapper py-10">
@@ -76,17 +79,20 @@
 	</form>
 </dialog>
 
-<input type="checkbox" id="purchase-modal" bind:checked={purchasing} class="modal-toggle" />
-<div class="modal modal-bottom">
-	<div class="modal-box text-center">
+<!-- Open the modal using ID.showModal() method -->
+<dialog class="modal modal-bottom" bind:this={checkoutModal}>
+	<form class="modal-box text-center">
 		<h3 class="font-bold text-lg">Redirecting to checkout...</h3>
 		<p class="max-w-prose mx-auto">
 			You will be taken to the checkout shortly. We use Stripe for payments, and will only charge
 			your card when the machine confirms it has given you the item.
 		</p>
 		<progress class="progress w-full mt-5 mx-auto" />
-	</div>
-</div>
+	</form>
+	<form method="dialog" class="modal-backdrop">
+		<button>close</button>
+	</form>
+</dialog>
 
 <style lang="postcss">
 	.products-wrapper {
