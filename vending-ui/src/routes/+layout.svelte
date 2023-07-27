@@ -79,11 +79,10 @@
 
 <style lang="postcss">
 	.brand-ribbon {
-		@apply h-2 w-full sticky top-0 left-0 z-30;
+		@apply h-2 w-full z-30;
 	}
 	header {
 		@apply bg-base-100 flex items-center justify-start gap-4 p-4 pt-5 z-20;
-		@apply sticky top-0;
 	}
 	header .spacer {
 		@apply flex-grow;
