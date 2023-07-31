@@ -77,7 +77,7 @@ export const removeQueueItem = async (
 			const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId);
 			if (paymentIntent.status === 'succeeded') {
 				hook?.send(
-					`Dispensed "${paymentIntent.metadata.product_name}" from shelf ${paymentIntent.metadata.shelf_loc} and charged card! (Payment ID: ${paymentIntent.id}) `
+					`Dispensed "${paymentIntent.metadata.product_name}" from shelf ${paymentIntent.metadata.shelf_loc} and charged card! (Payment: https://dashboard.stripe.com/payments/${paymentIntent.id}) `
 				);
 				return { success: true };
 			}
@@ -85,7 +85,7 @@ export const removeQueueItem = async (
 			const paymentIntent = await stripe.paymentIntents.cancel(paymentIntentId);
 			if (paymentIntent.status === 'canceled') {
 				hook?.send(
-					`Cancelled "${paymentIntent.metadata.product_name}" and refunded card! (Payment ID: ${paymentIntent.id}) `
+					`Cancelled "${paymentIntent.metadata.product_name}" and refunded card! (Payment: https://dashboard.stripe.com/payments/${paymentIntent.id})`
 				);
 				return { success: true };
 			}
