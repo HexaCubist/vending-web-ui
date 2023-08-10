@@ -16,10 +16,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	const stripe = new Stripe(env.STRIPE_KEY, {
 		apiVersion: '2022-11-15'
 	});
-	let startOfMonth = new Date();
-	startOfMonth.setDate(1);
+	let monthAgo = new Date();
+	monthAgo.setDate(monthAgo.getDate() - 30);
 	const completedPayments = stripe.paymentIntents.search({
-		query: `status:'succeeded' AND created>${Math.floor(startOfMonth.getTime() / 1000)}`,
+		query: `status:'succeeded' AND created>${Math.floor(monthAgo.getTime() / 1000)}`,
 		limit: 100,
 		expand: ['total_count']
 	});
