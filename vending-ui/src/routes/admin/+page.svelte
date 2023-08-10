@@ -63,7 +63,7 @@
 			<h1 class="text-5xl font-bold">Admin Console</h1>
 		</div>
 		{#if data.results !== false}
-			<div class="stats shadow">
+			<div class="stats grid-flow-row sm:grid-flow-col shadow">
 				<div class="stat">
 					<div class="stat-title">Total Sales (Month)</div>
 					<div class="stat-value">
@@ -98,7 +98,7 @@
 		<div class="card bg-base-100 shadow-xl mx-auto max-w-screen-lg w-full">
 			<div class="card-body">
 				<h2 class="text-4xl font-bold">Queued Items</h2>
-				<div class="overflow-x-auto">
+				<div class="overflow-x-auto table-overflow">
 					<table class="table w-full">
 						<!-- head -->
 						<thead>
@@ -200,20 +200,73 @@
 		</div>
 	</div>
 	{#if data.products}
+		{@const soldSum = data.products.reduce(
+			(acc, cur) =>
+				acc + (data.month?.topItems?.find((item) => item.product_id === cur.id)?.total || 0),
+			0
+		)}
+		{@const soldNum = data.products.reduce(
+			(acc, cur) =>
+				acc + (data.month?.topItems?.find((item) => item.product_id === cur.id)?.count || 0),
+			0
+		)}
 		<!-- Products -->
 		<div class="card bg-base-100 shadow-xl mx-auto max-w-screen-lg w-full">
 			<div class="card-body">
 				<h2 class="text-4xl font-bold">Products</h2>
-				<div class="overflow-x-auto">
+				<div class="overflow-x-auto table-overflow">
 					<table class="table w-full">
 						<!-- head -->
 						<thead>
 							<tr>
 								<th />
 								<th>Product</th>
-								<th>Shelf Location</th>
-								<th>price</th>
-								<th>Sold this month</th>
+								<th>
+									<button
+										on:click={() => {
+											data.products = data.products?.sort((a, b) => {
+												const aLoc = a.shelf_loc || '';
+												const bLoc = b.shelf_loc || '';
+												return aLoc.localeCompare(bLoc);
+											});
+										}}>Shelf Location</button
+									>
+								</th>
+								<th>Price</th>
+								<th
+									><button
+										on:click={() => {
+											data.products = data.products?.sort((a, b) => {
+												const aSold =
+													data.month?.topItems?.find((item) => item.product_id === a.id)?.total ||
+													0;
+												const bSold =
+													data.month?.topItems?.find((item) => item.product_id === b.id)?.total ||
+													0;
+												return bSold - aSold;
+											});
+										}}
+									>
+										$ Sold (30 days)
+									</button>
+								</th>
+								<th>
+									<button
+										on:click={() => {
+											data.products = data.products?.sort((a, b) => {
+												const aSold =
+													data.month?.topItems?.find((item) => item.product_id === a.id)?.count ||
+													0;
+												const bSold =
+													data.month?.topItems?.find((item) => item.product_id === b.id)?.count ||
+													0;
+												return bSold - aSold;
+											});
+										}}
+									>
+										# Sold (30 days)
+									</button>
+								</th>
 								<th>Actions</th>
 							</tr>
 						</thead>
@@ -258,8 +311,24 @@
 										>{data.month.topItems
 											.find((item) => item.product_id === product.id)
 											?.total.toLocaleString('en-NZ', { style: 'currency', currency: 'NZD' }) ||
-											'$0.00'}</td
-									>
+											'$0.00'}
+										<progress
+											class="progress"
+											value={data.month.topItems.find((item) => item.product_id === product.id)
+												?.total || 0}
+											max={soldSum}
+										/>
+									</td>
+									<td
+										>{data.month.topItems.find((item) => item.product_id === product.id)?.count ||
+											'0'}
+										<progress
+											class="progress"
+											value={data.month.topItems.find((item) => item.product_id === product.id)
+												?.count || 0}
+											max={soldNum}
+										/>
+									</td>
 									<td>
 										<label for={`product-actions-edit-${product.id}`} class="btn btn-ghost btn-xs"
 											>Edit</label
@@ -340,3 +409,9 @@
 		</div>
 	{/if}
 </div>
+
+<style lang="postcss">
+	.table-overflow {
+		max-width: 90vw;
+	}
+</style>
