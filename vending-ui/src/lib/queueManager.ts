@@ -8,6 +8,17 @@ if (hook) {
 	console.log('Discord webhook enabled');
 }
 
+/**
+ * Community webhook for notifying when items are sold, but not linking to the payment
+ */
+const communityHook = env.DISCORD_COMMUNITY_WEBHOOK
+	? new Webhook(env.DISCORD_COMMUNITY_WEBHOOK)
+	: null;
+if (communityHook) {
+	communityHook.setUsername('Vending Machine');
+	console.log('Discord community webhook enabled');
+}
+
 export interface QueueItem {
 	shelf_loc: number;
 	product_id: string;
@@ -78,6 +89,11 @@ export const removeQueueItem = async (
 			if (paymentIntent.status === 'succeeded') {
 				hook?.send(
 					`Dispensed "${paymentIntent.metadata.product_name}" from shelf ${paymentIntent.metadata.shelf_loc} and charged card! (Payment: https://dashboard.stripe.com/payments/${paymentIntent.id}) `
+				);
+				communityHook?.send(
+					`"${paymentIntent.metadata.product_name} ($${(paymentIntent.amount / 100).toFixed(
+						2
+					)})" purchased from shelf ${paymentIntent.metadata.shelf_loc}`
 				);
 				return { success: true };
 			}
