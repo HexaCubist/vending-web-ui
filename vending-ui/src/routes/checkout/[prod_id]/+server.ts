@@ -38,7 +38,7 @@ export const GET: RequestHandler = async ({ url, params }) => {
 		const session = await stripe.checkout.sessions.create({
 			line_items: [{ price: priceID, quantity: 1 }],
 			mode: 'payment',
-			success_url: success_url.toString(),
+			success_url: success_url.toString() + '/{CHECKOUT_SESSION_ID}',
 			cancel_url: cancel_url.toString(),
 			payment_intent_data: {
 				capture_method: 'manual',

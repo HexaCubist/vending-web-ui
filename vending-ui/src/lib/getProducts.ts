@@ -30,6 +30,7 @@ export type VendableProduct = {
 	image?: string;
 	shelf_loc: string;
 	indicator?: string;
+	stock?: number;
 	tags: Set<Tags>;
 };
 
@@ -48,7 +49,9 @@ export default async function getProducts(STRIPE_KEY: string) {
 		const vendable = product.metadata.vendable === 'true' && product.active === true;
 		const is_free = getPrice(product) === 0;
 		const has_link = product.metadata.link !== null;
-		return vendable && (is_free || has_link);
+		const in_stock =
+			parseInt(product.metadata.stock) > 0 || isNaN(parseInt(product.metadata.stock));
+		return vendable && (is_free || has_link) && in_stock;
 	});
 
 	const unsorted = vendable_products.map((product) => {
@@ -69,15 +72,24 @@ export default async function getProducts(STRIPE_KEY: string) {
 			image: product.images[0],
 			shelf_loc: product.metadata.shelf_loc,
 			indicator: product.metadata.indicator,
+			stock: parseInt(product.metadata.stock),
 			tags: new Set(tags)
 		} as VendableProduct;
 	});
 	return unsorted
 		.sort((a, b) => a.shelf_loc.localeCompare(b.shelf_loc))
 		.reduceRight((acc: VendableProduct[], prod) => {
+			// Featured first
 			if (prod.tags.has(Tags.featured)) {
 				return [prod, ...acc];
 			}
 			return [...acc, prod];
 		}, []);
+	// .reduceRight((acc: VendableProduct[], prod) => {
+	// 	// Out of stock last
+	// 	if (prod.stock && (prod.stock < 1 || isNaN(prod.stock))) {
+	// 		return [...acc, prod];
+	// 	}
+	// 	return [prod, ...acc];
+	// }, []);
 }
