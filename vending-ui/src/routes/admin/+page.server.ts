@@ -52,7 +52,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		)
 		.then((topItems) => Object.values(topItems).sort((a, b) => b.count - a.count));
 	return {
-		products: getProducts(env.STRIPE_KEY),
+		products: getProducts(env.STRIPE_KEY, true),
 		queue: getQueue(env.STRIPE_KEY),
 		month: Promise.all([completedPayments, totalValue, topItems]).then(
 			([completedPayments, totalValue, topItems]) => ({
@@ -92,7 +92,7 @@ export const actions: Actions = {
 
 		return {
 			queue: await getQueue(env.STRIPE_KEY),
-			products: await getProducts(env.STRIPE_KEY)
+			products: await getProducts(env.STRIPE_KEY, true)
 		};
 	},
 	dispenseProduct: async ({ request }) => {
@@ -113,7 +113,7 @@ export const actions: Actions = {
 
 		return {
 			queue: await getQueue(env.STRIPE_KEY),
-			products: await getProducts(env.STRIPE_KEY)
+			products: await getProducts(env.STRIPE_KEY, true)
 		};
 	},
 	pressKeypad: async ({ request }) => {

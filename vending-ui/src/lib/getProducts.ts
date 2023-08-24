@@ -34,7 +34,7 @@ export type VendableProduct = {
 	tags: Set<Tags>;
 };
 
-export default async function getProducts(STRIPE_KEY: string) {
+export default async function getProducts(STRIPE_KEY: string, show_unstocked = false) {
 	const stripe = new Stripe(STRIPE_KEY, {
 		apiVersion: '2022-11-15'
 	});
@@ -51,7 +51,7 @@ export default async function getProducts(STRIPE_KEY: string) {
 		const has_link = product.metadata.link !== null;
 		const in_stock =
 			parseInt(product.metadata.stock) > 0 || isNaN(parseInt(product.metadata.stock));
-		return vendable && (is_free || has_link) && in_stock;
+		return vendable && (is_free || has_link) && (in_stock || show_unstocked);
 	});
 
 	const unsorted = vendable_products.map((product) => {
@@ -64,6 +64,8 @@ export default async function getProducts(STRIPE_KEY: string) {
 			.map(([key]) => {
 				return Tags[key as keyof typeof Tags];
 			});
+		const stock = parseInt(product.metadata.stock);
+		console.log(product.name, product.metadata.stock);
 		return {
 			id: product.id,
 			name: product.name,
@@ -72,7 +74,7 @@ export default async function getProducts(STRIPE_KEY: string) {
 			image: product.images[0],
 			shelf_loc: product.metadata.shelf_loc,
 			indicator: product.metadata.indicator,
-			stock: parseInt(product.metadata.stock),
+			stock: isNaN(stock) ? undefined : stock,
 			tags: new Set(tags)
 		} as VendableProduct;
 	});

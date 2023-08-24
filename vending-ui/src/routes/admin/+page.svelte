@@ -267,6 +267,18 @@
 										# Sold (30 days)
 									</button>
 								</th>
+								<th>
+									<button
+										on:click={() => {
+											data.products = data.products?.sort((a, b) => {
+												const difference = (a.stock ?? Infinity) - (b.stock ?? Infinity);
+												return isNaN(difference) ? 0 : difference;
+											});
+										}}
+									>
+										Stock
+									</button>
+								</th>
 								<th>Actions</th>
 							</tr>
 						</thead>
@@ -280,7 +292,10 @@
 							{/if}
 							{#each data.products as product, idx}
 								<tr>
-									<th>{idx + 1}</th>
+									<th
+										class:bg-error={product.stock === 0}
+										class:text-error-content={product.stock === 0}>{idx + 1}</th
+									>
 									<td>
 										<div class="flex items-center space-x-3">
 											{#if product.image}
@@ -292,7 +307,7 @@
 											{/if}
 											<div>
 												<p class="font-bold">{product.name}</p>
-												<p class="text-sm text-gray-600 max-w-xs truncate">
+												<p class="text-sm text-gray-600 max-w-[15ch] truncate">
 													{product.description || ''}
 												</p>
 											</div>
@@ -328,6 +343,10 @@
 												?.count || 0}
 											max={soldNum}
 										/>
+									</td>
+									<td
+										>{product.stock ?? '∞'}
+										<progress class="progress" value={product.stock ?? 10} max={10} />
 									</td>
 									<td>
 										<label for={`product-actions-edit-${product.id}`} class="btn btn-ghost btn-xs"
