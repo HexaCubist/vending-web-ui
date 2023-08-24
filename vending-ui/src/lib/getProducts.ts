@@ -16,10 +16,10 @@ export function getPrice(product: Stripe.Product): number | null {
 }
 
 export enum Tags {
-	unique,
-	token,
-	limited,
-	featured
+	unique = 'unique',
+	token = 'token',
+	limited = 'limited',
+	featured = 'featured'
 }
 
 export type VendableProduct = {
@@ -32,6 +32,7 @@ export type VendableProduct = {
 	indicator?: string;
 	stock?: number;
 	tags: Set<Tags>;
+	active?: boolean;
 };
 
 export default async function getProducts(STRIPE_KEY: string, show_unstocked = false) {
@@ -40,13 +41,13 @@ export default async function getProducts(STRIPE_KEY: string, show_unstocked = f
 	});
 
 	const all_products = await stripe.products.search({
-		query: `active:'true' AND metadata['vendable']:'true'`,
+		query: `${show_unstocked ? '' : "active:'true' AND "}metadata['vendable']:'true'`,
 		limit: 100,
 		expand: ['data.default_price']
 	});
 
 	const vendable_products = all_products.data.filter((product) => {
-		const vendable = product.metadata.vendable === 'true' && product.active === true;
+		const vendable = product.metadata.vendable === 'true';
 		const is_free = getPrice(product) === 0;
 		const has_link = product.metadata.link !== null;
 		const in_stock =
@@ -65,7 +66,6 @@ export default async function getProducts(STRIPE_KEY: string, show_unstocked = f
 				return Tags[key as keyof typeof Tags];
 			});
 		const stock = parseInt(product.metadata.stock);
-		console.log(product.name, product.metadata.stock);
 		return {
 			id: product.id,
 			name: product.name,
@@ -75,7 +75,8 @@ export default async function getProducts(STRIPE_KEY: string, show_unstocked = f
 			shelf_loc: product.metadata.shelf_loc,
 			indicator: product.metadata.indicator,
 			stock: isNaN(stock) ? undefined : stock,
-			tags: new Set(tags)
+			tags: new Set(tags),
+			active: product.active
 		} as VendableProduct;
 	});
 	return unsorted

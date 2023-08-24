@@ -3,11 +3,12 @@
 	import type { QueueItem } from '$lib/queueManager';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { PageData } from './$types';
+	import { Tags } from '$lib/getProducts';
+	import ProductTable from './productTable.svelte';
 
 	export let data: PageData;
 
 	const queueModals: Record<string, boolean> = {};
-	const productModals: Record<string, boolean> = {};
 	let loading = false;
 
 	type queueEnhanceHandler = (
@@ -43,8 +44,10 @@
 			}
 			update();
 			loading = false;
-			const foundID = (form.querySelector('input#id') as HTMLInputElement | undefined)?.value;
+			const foundID = (form.querySelector("input[name='id']") as HTMLInputElement | undefined)
+				?.value;
 			if (foundID) queueModals[foundID] = false;
+			if (foundID) productModals[foundID] = false;
 		};
 	};
 
@@ -55,6 +58,9 @@
 	};
 
 	const keypad = (x: number) => {};
+
+	$: activeProducts = data.products?.filter((p) => p.active) || [];
+	$: archivedProducts = data.products?.filter((p) => !p.active) || [];
 </script>
 
 <div class="hero py-10">
@@ -200,229 +206,18 @@
 		</div>
 	</div>
 	{#if data.products}
-		{@const soldSum = data.products.reduce(
-			(acc, cur) =>
-				acc + (data.month?.topItems?.find((item) => item.product_id === cur.id)?.total || 0),
-			0
-		)}
-		{@const soldNum = data.products.reduce(
-			(acc, cur) =>
-				acc + (data.month?.topItems?.find((item) => item.product_id === cur.id)?.count || 0),
-			0
-		)}
 		<!-- Products -->
 		<div class="card bg-base-100 shadow-xl mx-auto max-w-screen-lg w-full">
 			<div class="card-body">
 				<h2 class="text-4xl font-bold">Products</h2>
-				<div class="overflow-x-auto table-overflow">
-					<table class="table w-full">
-						<!-- head -->
-						<thead>
-							<tr>
-								<th />
-								<th>Product</th>
-								<th>
-									<button
-										on:click={() => {
-											data.products = data.products?.sort((a, b) => {
-												const aLoc = a.shelf_loc || '';
-												const bLoc = b.shelf_loc || '';
-												return aLoc.localeCompare(bLoc);
-											});
-										}}>Shelf Location</button
-									>
-								</th>
-								<th>Price</th>
-								<th
-									><button
-										on:click={() => {
-											data.products = data.products?.sort((a, b) => {
-												const aSold =
-													data.month?.topItems?.find((item) => item.product_id === a.id)?.total ||
-													0;
-												const bSold =
-													data.month?.topItems?.find((item) => item.product_id === b.id)?.total ||
-													0;
-												return bSold - aSold;
-											});
-										}}
-									>
-										$ Sold (30 days)
-									</button>
-								</th>
-								<th>
-									<button
-										on:click={() => {
-											data.products = data.products?.sort((a, b) => {
-												const aSold =
-													data.month?.topItems?.find((item) => item.product_id === a.id)?.count ||
-													0;
-												const bSold =
-													data.month?.topItems?.find((item) => item.product_id === b.id)?.count ||
-													0;
-												return bSold - aSold;
-											});
-										}}
-									>
-										# Sold (30 days)
-									</button>
-								</th>
-								<th>
-									<button
-										on:click={() => {
-											data.products = data.products?.sort((a, b) => {
-												const difference = (a.stock ?? Infinity) - (b.stock ?? Infinity);
-												return isNaN(difference) ? 0 : difference;
-											});
-										}}
-									>
-										Stock
-									</button>
-								</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#if data.products.length === 0}
-								<tr>
-									<td colspan="5" class="text-center text-lg font-semibold text-base-content"
-										>No Products!</td
-									>
-								</tr>
-							{/if}
-							{#each data.products as product, idx}
-								<tr>
-									<th
-										class:bg-error={product.stock === 0}
-										class:text-error-content={product.stock === 0}>{idx + 1}</th
-									>
-									<td>
-										<div class="flex items-center space-x-3">
-											{#if product.image}
-												<div class="avatar">
-													<div class="mask mask-squircle w-12 h-12">
-														<img src={product.image} alt="" />
-													</div>
-												</div>
-											{/if}
-											<div>
-												<p class="font-bold">{product.name}</p>
-												<p class="text-sm text-gray-600 max-w-[15ch] truncate">
-													{product.description || ''}
-												</p>
-											</div>
-										</div>
-									</td>
-									<td>{product.shelf_loc}</td>
-									<td
-										>{product.price === null
-											? 'Any'
-											: product.price.toLocaleString('en-NZ', {
-													style: 'currency',
-													currency: 'NZD'
-											  })}</td
-									>
-									<td
-										>{data.month.topItems
-											.find((item) => item.product_id === product.id)
-											?.total.toLocaleString('en-NZ', { style: 'currency', currency: 'NZD' }) ||
-											'$0.00'}
-										<progress
-											class="progress"
-											value={data.month.topItems.find((item) => item.product_id === product.id)
-												?.total || 0}
-											max={soldSum}
-										/>
-									</td>
-									<td
-										>{data.month.topItems.find((item) => item.product_id === product.id)?.count ||
-											'0'}
-										<progress
-											class="progress"
-											value={data.month.topItems.find((item) => item.product_id === product.id)
-												?.count || 0}
-											max={soldNum}
-										/>
-									</td>
-									<td
-										>{product.stock ?? '∞'}
-										<progress class="progress" value={product.stock ?? 10} max={10} />
-									</td>
-									<td>
-										<label for={`product-actions-edit-${product.id}`} class="btn btn-ghost btn-xs"
-											>Edit</label
-										>
-									</td>
-								</tr>
-								<input
-									type="checkbox"
-									id={`product-actions-edit-${product.id}`}
-									class="modal-toggle"
-									bind:checked={productModals[product.id]}
-								/>
-								<div class="modal">
-									<div class="modal-box">
-										<h3 class="font-bold text-lg">Edit "{product.name}"</h3>
-										{#if false}
-											<form
-												action="?/saveProduct"
-												method="post"
-												use:enhance={productEnhanceHandler}
-												class="grid grid-cols-1 gap-6"
-											>
-												<input type="hidden" name="id" value={product.id} />
-												<div class="form-control w-full max-w-xs">
-													<label for={`product-edit-${product.id}-name`} class="label">
-														<span class="label-text w-full">Product Name</span>
-													</label>
-													<input
-														id={`product-edit-${product.id}-name`}
-														type="text"
-														placeholder="Type here"
-														class="input input-bordered w-full max-w-xs"
-														value={product.name}
-													/>
-													<label for={`product-edit-${product.id}-name`} class="label">
-														<span class="label-text w-full">Price</span>
-													</label>
-													<label class="input-group">
-														<span>$</span>
-														<input
-															id={`product-edit-${product.id}-name`}
-															type="text"
-															required
-															placeholder="0.00"
-															class="input input-bordered"
-														/>
-													</label>
-												</div>
-												<div class="submit">
-													<button class:loading type="submit" class="btn btn-success"
-														>Save Changes</button
-													>
-												</div>
-											</form>
-										{/if}
-										<div class="modal-action flex flex-wrap justify-between">
-											<form
-												action="?/dispenseProduct"
-												method="post"
-												use:enhance={productEnhanceHandler}
-											>
-												<input type="hidden" name="id" value={product.id} />
-												<button class:loading type="submit" class="btn btn-warning"
-													>Manually Dispense Product</button
-												>
-											</form>
-											<label for={`product-actions-edit-${product.id}`} class="btn btn-ghost"
-												>Close</label
-											>
-										</div>
-									</div>
-								</div>
-							{/each}
-						</tbody>
-					</table>
+				<ProductTable bind:data filter={(p) => !!p.active} topItems={data.month.topItems} />
+				<h2 class="text-4xl font-bold">Archived Products</h2>
+				<div class="collapse collapse-arrow border border-base-300 bg-base-200">
+					<input type="checkbox" />
+					<div class="collapse-title text-xl font-medium">Archived Products</div>
+					<div class="collapse-content">
+						<ProductTable bind:data filter={(p) => !p.active} topItems={data.month.topItems} />
+					</div>
 				</div>
 			</div>
 		</div>

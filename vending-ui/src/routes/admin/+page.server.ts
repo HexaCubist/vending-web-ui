@@ -2,7 +2,7 @@ import type { PageServerLoad, Actions } from './$types';
 import Stripe from 'stripe';
 import { error, json, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
-import getProducts from '$lib/getProducts';
+import getProducts, { Tags } from '$lib/getProducts';
 import { getQueue, removeQueueItem } from '$lib/queueManager';
 import { addFreeQueueItem } from '$lib/freeStore';
 
@@ -86,10 +86,58 @@ export const actions: Actions = {
 	saveProduct: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id');
-		if (!id || env.STRIPE_KEY === undefined) {
+		const products = await getProducts(env.STRIPE_KEY, true);
+		if (!id || env.STRIPE_KEY === undefined || products.find((p) => p.id === id) === undefined) {
 			return error(400, 'Bad request');
 		}
 
+		const stripe = new Stripe(env.STRIPE_KEY, {
+			apiVersion: '2022-11-15'
+		});
+
+		const product = await stripe.products.update(id.toString(), {
+			name: data.get('name')?.toString() || '',
+			metadata: {
+				...Object.values(Tags)
+					.filter((tag) => data.get(tag) !== null)
+					.reduce(
+						(acc, tag) => ({
+							...acc,
+							[tag]: data.get(tag) ? 'true' : 'false'
+						}),
+						{}
+					),
+				shelf_loc: data.get('shelf_loc')?.toString() || '',
+				stock: data.get('stock')?.toString() || ''
+			},
+			expand: ['default_price'],
+			active: !(data.get('archive') === 'archive')
+		});
+
+		const existing_price = product.default_price;
+		let useExistingPrice =
+			existing_price && typeof existing_price !== 'string'
+				? existing_price.unit_amount === parseInt(data.get('price')?.toString() || '0') * 100
+				: false;
+		// If price has changed, update it
+		if (!useExistingPrice) {
+			const price = await stripe.prices.create({
+				product: id.toString(),
+				unit_amount: parseInt(data.get('price')?.toString() || '0') * 100,
+				currency: 'nzd'
+			});
+			await stripe.products.update(id.toString(), {
+				default_price: price.id
+			});
+			// If price has been removed, deactivate it
+			if (existing_price && typeof existing_price !== 'string') {
+				await stripe.prices.update(existing_price.id, {
+					active: false
+				});
+			}
+		}
+
+		// Get default price and update
 		return {
 			queue: await getQueue(env.STRIPE_KEY),
 			products: await getProducts(env.STRIPE_KEY, true)
