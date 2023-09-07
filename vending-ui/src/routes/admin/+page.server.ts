@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const completedPayments = stripe.paymentIntents.search({
 		query: `status:'succeeded' AND created>${Math.floor(monthAgo.getTime() / 1000)}`,
 		limit: 100,
-		expand: ['total_count']
+		expand: ['total_count', 'data.latest_charge.balance_transaction']
 	});
 	const totalValue = completedPayments.then(
 		(cp) =>
@@ -33,33 +33,41 @@ export const load: PageServerLoad = async ({ params }) => {
 		.then((cp) =>
 			cp.data.reduce(async (accPromise, payment) => {
 				const acc = await accPromise;
+				const fee =
+					typeof payment.latest_charge !== 'string' &&
+					typeof payment.latest_charge?.balance_transaction !== 'string'
+						? (payment.latest_charge?.balance_transaction?.fee || 0) / 100
+						: 0;
+
 				const items = payment.metadata.product_id;
 				if (!items) return acc;
 				for (const item of items.split(',')) {
 					if (!item) return acc;
 					let price = payment.amount / 100;
-					if (items.length > 1) {
+					if (items.split(',').length > 1) {
 						const prod = await stripe.products.retrieve(item, { expand: ['default_price'] });
 						const default_price = prod.default_price;
 						if (default_price && typeof default_price !== 'string') {
-							price = default_price.unit_amount || 0 / 100;
+							price = (default_price.unit_amount || 0) / 100;
 						}
 					}
 					if (acc[item]) {
 						acc[item].count++;
 						acc[item].total += price;
+						acc[item].total += price - fee / items.split(',').length;
 					} else {
 						const product = await stripe.products.retrieve(item);
 						acc[item] = {
 							product_id: item,
 							count: 1,
 							total: price,
+							actual_total: price - fee / items.split(',').length,
 							product_name: product.name
 						};
 					}
 				}
 				return acc;
-			}, Promise.resolve({} as { [key: string]: { count: number; total: number; product_name: string; product_id: string } }))
+			}, Promise.resolve({} as { [key: string]: { count: number; total: number; actual_total: number; product_name: string; product_id: string } }))
 		)
 		.then((topItems) => Object.values(topItems).sort((a, b) => b.count - a.count));
 	return {

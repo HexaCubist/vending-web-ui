@@ -8,6 +8,7 @@
 	export let topItems: {
 		count: number;
 		total: number;
+		actual_total: number;
 		product_name: string;
 		product_id: string;
 	}[];
@@ -80,6 +81,19 @@
 						$ Sold (30 days)
 					</button>
 				</th>
+				<th
+					><button
+						on:click={() => {
+							data.products = data.products?.sort((a, b) => {
+								const aSold = topItems?.find((item) => item.product_id === a.id)?.actual_total || 0;
+								const bSold = topItems?.find((item) => item.product_id === b.id)?.actual_total || 0;
+								return bSold - aSold;
+							});
+						}}
+					>
+						$ Income (30 days)
+					</button>
+				</th>
 				<th>
 					<button
 						on:click={() => {
@@ -147,6 +161,17 @@
 						<progress
 							class="progress"
 							value={topItems.find((item) => item.product_id === product.id)?.total || 0}
+							max={soldSum}
+						/>
+					</td>
+					<td
+						>{topItems
+							.find((item) => item.product_id === product.id)
+							?.actual_total.toLocaleString('en-NZ', { style: 'currency', currency: 'NZD' }) ||
+							'$0.00'}
+						<progress
+							class="progress"
+							value={topItems.find((item) => item.product_id === product.id)?.actual_total || 0}
 							max={soldSum}
 						/>
 					</td>
