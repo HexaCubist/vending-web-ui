@@ -54,7 +54,7 @@ export const load: PageServerLoad = async ({ params }) => {
 					if (acc[item]) {
 						acc[item].count++;
 						acc[item].total += price;
-						acc[item].total += price - fee / items.split(',').length;
+						acc[item].actual_total += price - fee / items.split(',').length;
 					} else {
 						const product = await stripe.products.retrieve(item);
 						acc[item] = {
