@@ -33,19 +33,30 @@ export const load: PageServerLoad = async ({ params }) => {
 		.then((cp) =>
 			cp.data.reduce(async (accPromise, payment) => {
 				const acc = await accPromise;
-				const item = payment.metadata.product_id;
-				if (!item) return acc;
-				if (acc[item]) {
-					acc[item].count++;
-					acc[item].total += payment.amount / 100;
-				} else {
-					const product = await stripe.products.retrieve(item);
-					acc[item] = {
-						product_id: item,
-						count: 1,
-						total: payment.amount / 100,
-						product_name: product.name
-					};
+				const items = payment.metadata.product_id;
+				if (!items) return acc;
+				for (const item of items.split(',')) {
+					if (!item) return acc;
+					let price = payment.amount / 100;
+					if (items.length > 1) {
+						const prod = await stripe.products.retrieve(item, { expand: ['default_price'] });
+						const default_price = prod.default_price;
+						if (default_price && typeof default_price !== 'string') {
+							price = default_price.unit_amount || 0 / 100;
+						}
+					}
+					if (acc[item]) {
+						acc[item].count++;
+						acc[item].total += price;
+					} else {
+						const product = await stripe.products.retrieve(item);
+						acc[item] = {
+							product_id: item,
+							count: 1,
+							total: price,
+							product_name: product.name
+						};
+					}
 				}
 				return acc;
 			}, Promise.resolve({} as { [key: string]: { count: number; total: number; product_name: string; product_id: string } }))
