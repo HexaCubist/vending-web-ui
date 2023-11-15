@@ -6,6 +6,7 @@
 	import { Tags } from '$lib/getProducts';
 	import ProductTable from './productTable.svelte';
 	import { onMount } from 'svelte';
+	import { DateTime } from 'luxon';
 
 	export let data: PageData;
 
@@ -101,7 +102,9 @@
 						{data.month?.totalValue.toLocaleString('en-NZ', { style: 'currency', currency: 'NZD' })}
 					</div>
 					<div class="stat-desc">
-						From {data.month?.completedPayments} purchases this month
+						From {data.month?.completedPayments} purchases since {data.startDate
+							? new Date(data.startDate).toLocaleString()
+							: 'the start of the month'}
 					</div>
 				</div>
 				<div class="stat">
@@ -109,9 +112,14 @@
 					{#if data.month?.topItems[0]}
 						<div class="stat-value">{data.month?.topItems[0].product_name}</div>
 						<div class="stat-desc">
-							From {data.month?.topItems[0].count} purchases this month totalling {data.month?.topItems[0].total.toLocaleString(
+							From {data.month?.topItems[0].count} purchases since {data.startDate
+								? new Date(data.startDate).toLocaleString()
+								: 'the start of the month'} totalling {data.month?.topItems[0].total.toLocaleString(
 								'en-NZ',
-								{ style: 'currency', currency: 'NZD' }
+								{
+									style: 'currency',
+									currency: 'NZD'
+								}
 							)}
 						</div>
 					{:else}
@@ -235,13 +243,23 @@
 		<div class="card bg-base-100 shadow-xl mx-auto max-w-screen-lg w-full">
 			<div class="card-body">
 				<h2 class="text-4xl font-bold">Products</h2>
-				<ProductTable bind:data filter={(p) => !!p.active} topItems={data.month.topItems} />
+				<ProductTable
+					startDate={new Date(data.startDate)}
+					bind:data
+					filter={(p) => !!p.active}
+					topItems={data.month.topItems}
+				/>
 				<h2 class="text-4xl font-bold">Archived Products</h2>
 				<div class="collapse collapse-arrow border border-base-300 bg-base-200">
 					<input type="checkbox" />
 					<div class="collapse-title text-xl font-medium">Archived Products</div>
 					<div class="collapse-content">
-						<ProductTable bind:data filter={(p) => !p.active} topItems={data.month.topItems} />
+						<ProductTable
+							startDate={new Date(data.startDate)}
+							bind:data
+							filter={(p) => !p.active}
+							topItems={data.month.topItems}
+						/>
 					</div>
 				</div>
 			</div>

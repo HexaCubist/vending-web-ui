@@ -3,6 +3,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
+	import { DateTime } from 'luxon';
 
 	export let data: PageData;
 	export let topItems: {
@@ -13,6 +14,7 @@
 		product_id: string;
 	}[];
 	export let filter: (i: VendableProduct) => boolean = () => true;
+	export let startDate: Date | undefined = undefined;
 
 	$: filteredProducts = data.products?.filter(filter) || [];
 
@@ -47,6 +49,14 @@
 			(acc, cur) => acc + (topItems?.find((item) => item.product_id === cur.id)?.count || 0),
 			0
 		) || [];
+	let daysSince = startDate
+		? DateTime.fromJSDate(startDate)
+				.diffNow('days')
+				.negate()
+				.mapUnits((x) => Math.ceil(x))
+				// .set({ hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+				.toHuman()
+		: '30 days';
 </script>
 
 <div class="overflow-x-auto table-overflow">
@@ -78,7 +88,7 @@
 							});
 						}}
 					>
-						$ Sold (30 days)
+						$ Sold ({daysSince})
 					</button>
 				</th>
 				<th
@@ -91,7 +101,7 @@
 							});
 						}}
 					>
-						$ Income (30 days)
+						$ Income ({daysSince})
 					</button>
 				</th>
 				<th>
@@ -104,7 +114,7 @@
 							});
 						}}
 					>
-						# Sold (30 days)
+						# Sold ({daysSince})
 					</button>
 				</th>
 				<th>
