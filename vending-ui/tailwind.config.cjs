@@ -9,7 +9,7 @@ const config = {
 		extend: {}
 	},
 
-	plugins: [typography, daisyui],
+	plugins: [typography, forms, daisyui],
 	daisyui: {
 		themes: ['fantasy', 'dark'],
 		lightTheme: 'fantasy'

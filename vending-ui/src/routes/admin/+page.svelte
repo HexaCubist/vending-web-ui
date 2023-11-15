@@ -5,6 +5,7 @@
 	import type { PageData } from './$types';
 	import { Tags } from '$lib/getProducts';
 	import ProductTable from './productTable.svelte';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -61,12 +62,36 @@
 
 	$: activeProducts = data.products?.filter((p) => p.active) || [];
 	$: archivedProducts = data.products?.filter((p) => !p.active) || [];
+
+	let dateForm: HTMLFormElement | undefined;
+	const dateToInput = (date: Date) =>
+		`${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}-${(
+			'0' + date.getDate()
+		).slice(-2)}`;
 </script>
 
 <div class="hero py-10">
 	<div class="hero-content flex-col lg:flex-row gap-14">
 		<div class="max-w-sm">
 			<h1 class="text-5xl font-bold">Admin Console</h1>
+			<!-- Select date (optional) -->
+			<div class="datePicker">
+				<form method="GET" bind:this={dateForm}>
+					<input
+						type="date"
+						name="startDate"
+						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+						value={data.startDate ? dateToInput(new Date(data.startDate)) : undefined}
+						on:input={() => {
+							if (dateForm) dateForm.submit();
+							// const u = new URL(window.location.href);
+							// if(!date) u.searchParams.delete('startDate');
+							// else u.searchParams.set('startDate', date.toISOString());
+							// window.history.replaceState({}, '', u.href);
+						}}
+					/>
+				</form>
+			</div>
 		</div>
 		{#if data.results !== false}
 			<div class="stats grid-flow-row sm:grid-flow-col shadow">

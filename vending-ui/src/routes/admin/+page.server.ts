@@ -6,7 +6,7 @@ import getProducts, { Tags } from '$lib/getProducts';
 import { getQueue, removeQueueItem } from '$lib/queueManager';
 import { addFreeQueueItem } from '$lib/freeStore';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, url }) => {
 	if (!env.STRIPE_KEY) {
 		return {
 			results: false
@@ -18,6 +18,16 @@ export const load: PageServerLoad = async ({ params }) => {
 	});
 	let monthAgo = new Date();
 	monthAgo.setDate(monthAgo.getDate() - 30);
+	let maxTime = new Date();
+	maxTime.setDate(maxTime.getDate() - 365 * 2);
+	// Get date from query
+	const requestedDate = url.searchParams.get('startDate');
+	if (requestedDate && Date.parse(requestedDate)) {
+		monthAgo = new Date(requestedDate);
+		if (monthAgo < maxTime) {
+			monthAgo = maxTime;
+		}
+	}
 	const completedPayments = stripe.paymentIntents.search({
 		query: `status:'succeeded' AND created>${Math.floor(monthAgo.getTime() / 1000)}`,
 		limit: 100,
@@ -79,7 +89,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				totalValue: totalValue,
 				topItems: Object.values(topItems).sort((a, b) => b.count - a.count)
 			})
-		)
+		),
+		startDate: monthAgo.toISOString()
 	};
 };
 
