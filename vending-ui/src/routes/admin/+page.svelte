@@ -250,9 +250,8 @@
 					topItems={data.month.topItems}
 				/>
 				<h2 class="text-4xl font-bold">Archived Products</h2>
-				<div class="collapse collapse-arrow border border-base-300 bg-base-200">
-					<input type="checkbox" />
-					<div class="collapse-title text-xl font-medium">Archived Products</div>
+				<details class="collapse border border-base-300 bg-base-200">
+					<summary class="collapse-title text-xl font-medium">Archived Products</summary>
 					<div class="collapse-content">
 						<ProductTable
 							startDate={new Date(data.startDate)}
@@ -261,7 +260,7 @@
 							topItems={data.month.topItems}
 						/>
 					</div>
-				</div>
+				</details>
 			</div>
 		</div>
 	{/if}
