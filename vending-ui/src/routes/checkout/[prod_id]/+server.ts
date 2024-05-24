@@ -10,7 +10,7 @@ export const GET: RequestHandler = async ({ url, params }) => {
 	}
 
 	const stripe = new Stripe(env.STRIPE_KEY, {
-		apiVersion: '2022-11-15'
+		apiVersion: '2024-04-10'
 	});
 
 	const product = await stripe.products.retrieve(params.prod_id);
@@ -26,7 +26,7 @@ export const GET: RequestHandler = async ({ url, params }) => {
 	if (price.unit_amount === 0) {
 		const product = await stripe.products.retrieve(params.prod_id);
 		addFreeQueueItem(product);
-		throw redirect(303, `/checkout/${params.prod_id}/success`);
+		redirect(303, `/checkout/${params.prod_id}/success`);
 	} else {
 		const success_url = new URL(url);
 		success_url.pathname = `/checkout/${params.prod_id}/success`;
@@ -56,6 +56,6 @@ export const GET: RequestHandler = async ({ url, params }) => {
 			return new Response('No session url found', { status: 500 });
 		}
 
-		throw redirect(303, session.url);
+		redirect(303, session.url);
 	}
 };

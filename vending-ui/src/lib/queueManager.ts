@@ -32,7 +32,7 @@ export interface QueueItem {
 
 export const getQueue = async (STRIPE_KEY: string): Promise<QueueItem[]> => {
 	const stripe = new Stripe(env.STRIPE_KEY, {
-		apiVersion: '2022-11-15'
+		apiVersion: '2024-04-10'
 	});
 
 	// Switched to list to ensure we get all pending payments (searching takes a while to index new items)
@@ -81,7 +81,7 @@ export const removeQueueItem = async (
 		return { success: true };
 	} else {
 		const stripe = new Stripe(env.STRIPE_KEY, {
-			apiVersion: '2022-11-15'
+			apiVersion: '2024-04-10'
 		});
 
 		if (complete) {

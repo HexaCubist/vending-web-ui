@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	const stripe = new Stripe(env.STRIPE_KEY, {
-		apiVersion: '2022-11-15'
+		apiVersion: '2024-04-10'
 	});
 
 	const product = await stripe.products.retrieve(params.prod_id, {
@@ -49,7 +49,7 @@ export const load: PageServerLoad = async ({ params }) => {
 				}
 			});
 		} else {
-			throw error(500, 'Payment not completed');
+			error(500, 'Payment not completed');
 		}
 	}
 

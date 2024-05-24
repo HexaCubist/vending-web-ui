@@ -37,7 +37,7 @@ export type VendableProduct = {
 
 export default async function getProducts(STRIPE_KEY: string, show_unstocked = false) {
 	const stripe = new Stripe(STRIPE_KEY, {
-		apiVersion: '2022-11-15'
+		apiVersion: '2024-04-10'
 	});
 
 	const all_products = await stripe.products.search({
@@ -80,7 +80,7 @@ export default async function getProducts(STRIPE_KEY: string, show_unstocked = f
 		} as VendableProduct;
 	});
 	return unsorted
-		.sort((a, b) => a.shelf_loc.localeCompare(b.shelf_loc))
+		.sort((a, b) => a.shelf_loc?.localeCompare(b.shelf_loc))
 		.reduceRight((acc: VendableProduct[], prod) => {
 			// Featured first
 			if (prod.tags.has(Tags.featured)) {

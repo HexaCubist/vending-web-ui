@@ -42,6 +42,9 @@
 				class="btn btn-ghost">Sign out</button
 			>
 		</div>
+		<div class="account">
+			<a href="/admin" class="btn btn-ghost">Admin</a>
+		</div>
 	{:else}
 		<div class="account">
 			<button
