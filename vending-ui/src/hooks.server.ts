@@ -1,11 +1,6 @@
 import { sequence } from '@sveltejs/kit/hooks';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { handle as authenticationHandle } from './auth';
-// import { stockShelves } from '$lib/stockMachine';
-// import { env } from '$env/dynamic/private';
-
-// // Step 0: Initialize product stock in Stripe
-// stockShelves(env.STRIPE_KEY);
 
 const authorizationHandle: Handle = async ({ event, resolve }) => {
 	// Protect any routes under /admin
