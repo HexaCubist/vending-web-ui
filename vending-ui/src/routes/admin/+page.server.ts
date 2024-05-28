@@ -176,6 +176,7 @@ export const actions: Actions = {
 				shelf_loc: data.get('shelf_loc')?.toString() || '',
 				stock: data.get('stock')?.toString() || ''
 			},
+			description: data.get('description')?.toString() || '',
 			expand: ['default_price'],
 			active: !(data.get('archive') === 'archive'),
 			images: image ? [image] : data.get('delete-image') === 'true' ? '' : undefined

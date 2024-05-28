@@ -145,6 +145,19 @@
 								class="input input-bordered w-full max-w-xs"
 								value={product.name}
 							/>
+							<!-- DESCRIPTION -->
+							<label for={`product-edit-${product.id}-description`} class="label">
+								<span
+									class="label-text
+									w-full">Product Description</span
+								>
+							</label>
+							<textarea
+								id={`product-edit-${product.id}-description`}
+								name="description"
+								placeholder="Type here"
+								class="textarea textarea-bordered w-full max-w-xs">{product.description}</textarea
+							>
 							<!-- STOCK -->
 							<label for={`product-edit-${product.id}-stock`} class="label">
 								<span class="label-text w-full">Product Stock</span>
