@@ -1,6 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import Stripe from 'stripe';
-import { error, json, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import getProducts, { Tags } from '$lib/getProducts';
 import { getQueue, removeQueueItem } from '$lib/queueManager';
@@ -12,7 +12,6 @@ export const load: PageServerLoad = async ({ params, url }) => {
 			results: false
 		};
 	}
-	// Get some basic stats from Stripe
 	const stripe = new Stripe(env.STRIPE_KEY, {
 		apiVersion: '2024-04-10'
 	});
@@ -20,7 +19,6 @@ export const load: PageServerLoad = async ({ params, url }) => {
 	monthAgo.setDate(monthAgo.getDate() - 30);
 	let maxTime = new Date();
 	maxTime.setDate(maxTime.getDate() - 365 * 2);
-	// Get date from query
 	const requestedDate = url.searchParams.get('startDate');
 	if (requestedDate && Date.parse(requestedDate)) {
 		monthAgo = new Date(requestedDate);
@@ -114,7 +112,10 @@ export const actions: Actions = {
 		if (!id || env.STRIPE_KEY === undefined) {
 			return error(400, 'Bad request');
 		}
-		removeQueueItem(env.STRIPE_KEY, id.toString());
+		// FIX: previously not awaited — getQueue below was returning stale data
+		// (still showing the item as queued) and any thrown error became an
+		// unhandled rejection that could crash the process.
+		await removeQueueItem(env.STRIPE_KEY, id.toString());
 		return { queue: await getQueue(env.STRIPE_KEY) };
 	},
 	cancel: async ({ request }) => {
@@ -123,7 +124,8 @@ export const actions: Actions = {
 		if (!id || env.STRIPE_KEY === undefined) {
 			return error(400, 'Bad request');
 		}
-		removeQueueItem(env.STRIPE_KEY, id.toString(), false);
+		// FIX: same as above — must await
+		await removeQueueItem(env.STRIPE_KEY, id.toString(), false);
 		return { queue: await getQueue(env.STRIPE_KEY) };
 	},
 	saveProduct: async ({ request }) => {
@@ -138,7 +140,6 @@ export const actions: Actions = {
 			apiVersion: '2024-04-10'
 		});
 
-		// Get product image
 		const imageField = data.get('image');
 		let image: string | undefined = undefined;
 		if (
@@ -187,7 +188,6 @@ export const actions: Actions = {
 			existing_price && typeof existing_price !== 'string'
 				? existing_price.unit_amount === parseInt(data.get('price')?.toString() || '0') * 100
 				: false;
-		// If price has changed, update it
 		if (!useExistingPrice) {
 			const price = await stripe.prices.create({
 				product: id.toString(),
@@ -197,7 +197,6 @@ export const actions: Actions = {
 			await stripe.products.update(id.toString(), {
 				default_price: price.id
 			});
-			// If price has been removed, deactivate it
 			if (existing_price && typeof existing_price !== 'string') {
 				await stripe.prices.update(existing_price.id, {
 					active: false
@@ -205,7 +204,6 @@ export const actions: Actions = {
 			}
 		}
 
-		// Get default price and update
 		return {
 			queue: await getQueue(env.STRIPE_KEY),
 			products: await getProducts(env.STRIPE_KEY, true)
@@ -224,7 +222,8 @@ export const actions: Actions = {
 
 		const product = await stripe.products.retrieve(id.toString());
 		if (product.id) {
-			addFreeQueueItem(product);
+			// FIX: must await
+			await addFreeQueueItem(product);
 		}
 
 		return {
@@ -233,20 +232,17 @@ export const actions: Actions = {
 		};
 	},
 	activateProduct: async ({ request }) => {
-		// Replace the product (archiving the old one) and add a new one to the product list
 		const data = await request.formData();
 		const newID = data.get('newID');
 		const slot = data.get('slot');
 		if (!newID || !slot || env.STRIPE_KEY === undefined) {
 			return error(400, 'Bad request');
 		}
-		// Get the product to activate
 		const stripe = new Stripe(env.STRIPE_KEY, {
 			apiVersion: '2024-04-10'
 		});
 
 		if (newID === 'newProd') {
-			// Create a new product with the same details
 			await stripe.products.create({
 				name: 'Empty Slot',
 				default_price_data: {
@@ -274,7 +270,6 @@ export const actions: Actions = {
 			if (!product.id) {
 				return error(400, 'Bad request');
 			}
-			// Activate the product
 			await stripe.products.update(newID.toString(), {
 				active: true,
 				metadata: {
@@ -284,7 +279,6 @@ export const actions: Actions = {
 			});
 		}
 
-		// Archive the product
 		const oldID = data.get('oldID');
 		if (oldID) {
 			await stripe.products.update(oldID.toString(), {
@@ -299,7 +293,8 @@ export const actions: Actions = {
 	pressKeypad: async ({ request }) => {
 		const data = await request.formData();
 		const shelf_loc = data.get('shelf_loc');
-		addFreeQueueItem({
+		// FIX: was unawaited and returned nothing.
+		await addFreeQueueItem({
 			id: 'ManualVend',
 			object: 'product',
 			active: true,
@@ -320,5 +315,6 @@ export const actions: Actions = {
 			updated: 0,
 			url: null
 		});
+		return { success: true };
 	}
 };
