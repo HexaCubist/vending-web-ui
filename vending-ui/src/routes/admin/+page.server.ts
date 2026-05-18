@@ -184,14 +184,15 @@ export const actions: Actions = {
 		});
 
 		const existing_price = product.default_price;
+		const submittedCents = Math.round(parseFloat(data.get('price')?.toString() || '0') * 100);
 		let useExistingPrice =
 			existing_price && typeof existing_price !== 'string'
-				? existing_price.unit_amount === parseInt(data.get('price')?.toString() || '0') * 100
+				? existing_price.unit_amount === submittedCents
 				: false;
 		if (!useExistingPrice) {
 			const price = await stripe.prices.create({
 				product: id.toString(),
-				unit_amount: parseInt(data.get('price')?.toString() || '0') * 100,
+				unit_amount: submittedCents,
 				currency: 'nzd'
 			});
 			await stripe.products.update(id.toString(), {

@@ -24,8 +24,16 @@ export const GET: RequestHandler = async ({ url, params }) => {
 	// Check if the price is free
 	const price = await stripe.prices.retrieve(priceID);
 	if (price.unit_amount === 0) {
-		const product = await stripe.products.retrieve(params.prod_id);
-		addFreeQueueItem(product);
+		const stock = parseInt(product.metadata.stock);
+		if (!isNaN(stock) && stock < 1) {
+			return new Response('Out of stock', { status: 409 });
+		}
+		if (!isNaN(stock)) {
+			await stripe.products.update(params.prod_id, {
+				metadata: { stock: (stock - 1).toString() }
+			});
+		}
+		await addFreeQueueItem(product);
 		redirect(303, `/checkout/${params.prod_id}/success`);
 	} else {
 		const success_url = new URL(url);
