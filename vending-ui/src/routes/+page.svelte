@@ -39,7 +39,7 @@
 						class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9" /></svg
 					>
 				</a>
-				<a target="_blank" rel="noreferrer" href="https://makeuoa.nz/wares/" class="btn btn-outline"
+				<a target="_blank" rel="noreferrer" href="https://docs.google.com/forms/d/e/1FAIpQLSe5s88RGlmT5UIOG1r5gwDQ8y6WZXVQlkfnPGi8vlffbXsv_A/viewform?usp=dialog" class="btn btn-outline"
 					>Apply to sell</a
 				>
 			</div>
