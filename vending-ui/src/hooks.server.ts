@@ -1,18 +1,18 @@
 import { sequence } from '@sveltejs/kit/hooks';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { handle as authenticationHandle } from './auth';
+import { env } from '$env/dynamic/private';
 
 const authorizationHandle: Handle = async ({ event, resolve }) => {
-	// Protect any routes under /admin
 	if (event.url.pathname.startsWith('/admin')) {
-		const session = await event.locals.auth();
-		if (!session) {
-			// Redirect to the signin page
-			throw redirect(303, '/auth/signin');
+		if (env.DEV_BYPASS_AUTH !== 'true') {
+			const session = await event.locals.auth();
+			if (!session) {
+				throw redirect(303, '/auth/signin');
+			}
 		}
 	}
 
-	// If the request is still here, just proceed as normally
 	return resolve(event);
 };
 

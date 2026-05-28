@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { type VendableProduct } from '$lib/getProducts';
 	import type { PageData } from '../$types';
 	import { DateTime } from 'luxon';
@@ -15,6 +16,12 @@
 	export let filter: (i: VendableProduct) => boolean = () => true;
 	export let startDate: Date | undefined = undefined;
 	let modalTriggers: Record<string, boolean> = {};
+
+	onMount(() => {
+		data.products = data.products?.sort((a, b) =>
+			(a.shelf_loc || '').localeCompare(b.shelf_loc || '')
+		);
+	});
 
 	$: filteredProducts = data.products?.filter(filter) || [];
 
@@ -35,14 +42,41 @@
 				.diffNow('days')
 				.negate()
 				.mapUnits((x) => Math.ceil(x))
-				// .set({ hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
 				.toHuman()
 		: '30 days';
+
+	// Pagination
+	const pageSize = 10;
+	let currentPage = 1;
+
+	$: totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+	$: paginatedProducts = filteredProducts.slice(
+		(currentPage - 1) * pageSize,
+		currentPage * pageSize
+	);
+	$: pageWindow = (() => {
+		const half = 2;
+		let start = Math.max(1, currentPage - half);
+		let end = Math.min(totalPages, start + 4);
+		start = Math.max(1, end - 4);
+		return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+	})();
+	$: startItem = (currentPage - 1) * pageSize + 1;
+	$: endItem = Math.min(currentPage * pageSize, filteredProducts.length);
+
+	function prevPage() {
+		if (currentPage > 1) currentPage--;
+	}
+	function nextPage() {
+		if (currentPage < totalPages) currentPage++;
+	}
+	function goToPage(n: number) {
+		currentPage = n;
+	}
 </script>
 
 <div class="overflow-x-auto table-overflow mt-4">
 	<table class="table w-full">
-		<!-- head -->
 		<thead>
 			<tr>
 				<th>
@@ -53,6 +87,7 @@
 								const bLoc = b.shelf_loc || '';
 								return aLoc.localeCompare(bLoc);
 							});
+							currentPage = 1;
 						}}>Location</button
 					>
 				</th>
@@ -66,6 +101,7 @@
 								const bSold = topItems?.find((item) => item.product_id === b.id)?.total || 0;
 								return bSold - aSold;
 							});
+							currentPage = 1;
 						}}
 					>
 						$ Sold ({daysSince})
@@ -75,10 +111,13 @@
 					><button
 						on:click={() => {
 							data.products = data.products?.sort((a, b) => {
-								const aSold = topItems?.find((item) => item.product_id === a.id)?.actual_total || 0;
-								const bSold = topItems?.find((item) => item.product_id === b.id)?.actual_total || 0;
+								const aSold =
+									topItems?.find((item) => item.product_id === a.id)?.actual_total || 0;
+								const bSold =
+									topItems?.find((item) => item.product_id === b.id)?.actual_total || 0;
 								return bSold - aSold;
 							});
+							currentPage = 1;
 						}}
 					>
 						$ Income ({daysSince})
@@ -92,6 +131,7 @@
 								const bSold = topItems?.find((item) => item.product_id === b.id)?.count || 0;
 								return bSold - aSold;
 							});
+							currentPage = 1;
 						}}
 					>
 						# Sold ({daysSince})
@@ -104,6 +144,7 @@
 								const difference = (a.stock ?? Infinity) - (b.stock ?? Infinity);
 								return isNaN(difference) ? 0 : difference;
 							});
+							currentPage = 1;
 						}}
 					>
 						Stock
@@ -113,7 +154,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each filteredProducts as product, idx}
+			{#each paginatedProducts as product}
 				{@const id = `productTable--${product.id}`}
 				<tr class:opacity-60={!product.active}>
 					<td>{product.shelf_loc}</td>
@@ -196,7 +237,7 @@
 				/>
 			{:else}
 				<tr>
-					<td colspan="5" class="text-center text-lg font-semibold text-base-content"
+					<td colspan="8" class="text-center text-lg font-semibold text-base-content"
 						>No Products!</td
 					>
 				</tr>
@@ -204,3 +245,89 @@
 		</tbody>
 	</table>
 </div>
+
+{#if totalPages > 1}
+	<div class="pt-pagination">
+		<span class="pt-pagination-info">
+			Showing {startItem}–{endItem} of {filteredProducts.length} products
+		</span>
+		<div class="pt-pagination-controls">
+			<button class="pt-page-btn" disabled={currentPage === 1} on:click={prevPage}
+				>&#8592; Prev</button
+			>
+			{#each pageWindow as p}
+				<button
+					class="pt-page-btn"
+					class:pt-page-btn--active={p === currentPage}
+					on:click={() => goToPage(p)}>{p}</button
+				>
+			{/each}
+			<button class="pt-page-btn" disabled={currentPage === totalPages} on:click={nextPage}
+				>Next &#8594;</button
+			>
+		</div>
+	</div>
+{/if}
+
+<style>
+	.pt-pagination {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 12px;
+		padding: 16px 0 0;
+		border-top: 1px solid var(--border-subtle);
+		margin-top: 4px;
+	}
+
+	.pt-pagination-info {
+		font-size: 13px;
+		color: var(--text-muted);
+		font-weight: 500;
+	}
+
+	.pt-pagination-controls {
+		display: flex;
+		gap: 4px;
+		align-items: center;
+	}
+
+	.pt-page-btn {
+		min-width: 36px;
+		height: 34px;
+		padding: 0 10px;
+		border: 1.5px solid var(--border-input);
+		border-radius: 7px;
+		font-size: 13px;
+		font-weight: 500;
+		color: var(--text-primary);
+		background: transparent;
+		cursor: pointer;
+		transition:
+			border-color 0.15s,
+			background 0.15s,
+			color 0.15s;
+		font-family: inherit;
+		white-space: nowrap;
+	}
+
+	.pt-page-btn:hover:not(:disabled) {
+		border-color: var(--text-muted);
+	}
+
+	.pt-page-btn:disabled {
+		opacity: 0.35;
+		cursor: default;
+	}
+
+	.pt-page-btn--active {
+		background: var(--btn-bg);
+		color: #fff;
+		border-color: var(--btn-bg);
+	}
+
+	.pt-page-btn--active:hover {
+		opacity: 0.85;
+	}
+</style>

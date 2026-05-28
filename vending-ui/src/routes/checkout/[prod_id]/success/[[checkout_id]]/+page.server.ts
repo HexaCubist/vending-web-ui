@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import Stripe from 'stripe';
-import { error, json, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { getPrice } from '$lib/getProducts';
 import { Webhook } from 'discord-webhook-node';
@@ -28,26 +28,28 @@ export const load: PageServerLoad = async ({ params }) => {
 		});
 		const payment = typeof session.payment_intent === 'string' ? undefined : session.payment_intent;
 
-		// Get product and update metadata to manage stock
 		if (payment?.status === 'requires_capture' || payment?.status === 'succeeded') {
-			const quantity = session.metadata?.quantity ? parseInt(session.metadata.quantity) : 1;
-			const stock = parseInt(product.metadata.stock);
-			const remainingStock = stock - quantity;
-			if (!isNaN(remainingStock) && payment.metadata.reserved !== 'true') {
-				await stripe.products.update(params.prod_id, {
-					metadata: {
-						stock: remainingStock.toString()
-					}
+			if (payment.metadata.reserved !== 'true') {
+				// Mark reserved first to narrow the double-decrement race window.
+				// Two simultaneous requests can still both read reserved=undefined,
+				// but this ordering makes the stock update the last thing that happens.
+				await stripe.paymentIntents.update(payment.id, {
+					metadata: { reserved: 'true' }
 				});
-				if (remainingStock < 1) {
-					hook?.send(`Product "${product.name}" is now sold out! :partying_face: :partying_face:`);
+				const quantity = parseInt(payment.metadata.quantity) || 1;
+				const stock = parseInt(product.metadata.stock);
+				const remainingStock = stock - quantity;
+				if (!isNaN(remainingStock)) {
+					await stripe.products.update(params.prod_id, {
+						metadata: { stock: remainingStock.toString() }
+					});
+					if (remainingStock < 1) {
+						hook
+							?.send(`Product "${product.name}" is now sold out! :partying_face: :partying_face:`)
+							.catch((err) => console.error('Discord webhook failed:', err));
+					}
 				}
 			}
-			await stripe.paymentIntents.update(payment.id, {
-				metadata: {
-					reserved: 'true'
-				}
-			});
 		} else {
 			error(500, 'Payment not completed');
 		}

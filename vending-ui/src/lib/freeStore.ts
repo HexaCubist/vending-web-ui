@@ -6,12 +6,25 @@ import type { QueueItem } from '$lib/queueManager';
 import { EntityId } from 'redis-om';
 
 const redis = createClient({
-	url: env.REDIS_URL
+	url: env.REDIS_URL,
+	socket: {
+		// Without a reconnect strategy, a Redis blip permanently breaks the
+		// connection until the Node process restarts.
+		reconnectStrategy: (retries) => Math.min(retries * 100, 3000)
+	}
 });
+
+// Surface async client errors instead of letting them go to default handling
+// (which on Node 18 can crash the process).
+redis.on('error', (err) => {
+	console.error('Redis client error:', err);
+});
+
 try {
 	await redis.connect();
 } catch (err) {
-	console.log('Redis Connection Error', err);
+	// Don't crash module init — the reconnect strategy above will keep trying.
+	console.error('Initial Redis connection failed (will keep retrying):', err);
 }
 
 const purchaseSchema = new Schema('Purchase', {
@@ -21,7 +34,12 @@ const purchaseSchema = new Schema('Purchase', {
 });
 
 const purchaseRepository = new Repository(purchaseSchema, redis);
-purchaseRepository.createIndex();
+
+// createIndex is async; if Redis is down at boot, swallow it so the module can
+// still be imported. It'll get created on the next successful call.
+purchaseRepository.createIndex().catch((err) => {
+	console.error('Failed to create Redis index on startup:', err);
+});
 
 export const ttlInSeconds = 2 * 60 * 60; // 2 hours
 export const maxItems = 1000;

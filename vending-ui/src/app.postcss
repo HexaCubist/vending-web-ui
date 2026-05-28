@@ -1,7 +1,135 @@
-/* Write your global styles here, in PostCSS syntax */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+	--brand-accent: #ffb41f;
+	--brand-gradient: linear-gradient(
+		146deg,
+		#567dff 0%,
+		#9f42d1 20%,
+		#f04ab9 35%,
+		#ff25c7 50%,
+		#ff3c6d 75%,
+		#ff856a 100%
+	);
+	--font-system: -apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'segoe ui',
+		'helvetica neue', helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
+
+	/* Light mode tokens */
+	--text-primary: #1d1d1f;
+	--text-muted: #8e8e8f;
+	--btn-bg: #000000;
+	--bg-page: #ffffff;
+	--bg-section: #f5f5f7;
+	--bg-card: #f5f5f7;
+	--bg-header: #ffffff;
+	--border-subtle: #f0f0f0;
+	--border-input: #d0d0d0;
+}
+
+[data-color-scheme='dark'] {
+	--text-primary: #f5f5f7;
+	--text-muted: #8e8e8f;
+	--btn-bg: #343435;
+	--bg-page: #1d1d1f;
+	--bg-section: #2c2c2e;
+	--bg-card: #3a3a3c;
+	--bg-header: #1d1d1f;
+	--border-subtle: #2c2c2e;
+	--border-input: #3c3c3e;
+}
+
+@layer base {
+	body {
+		font-family: var(--font-system);
+		color: var(--text-primary);
+		background: var(--bg-page);
+		min-height: 100vh;
+	}
+}
+
+@layer components {
+	.gh-container {
+		max-width: 1280px;
+		margin-left: auto;
+		margin-right: auto;
+		padding-left: 24px;
+		padding-right: 24px;
+	}
+
+	.gh-main-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		background: var(--btn-bg);
+		color: #ffffff;
+		font-size: 15px;
+		font-weight: 500;
+		padding: 12px 22px;
+		border-radius: 100px;
+		font-family: var(--font-system);
+		text-decoration: none;
+		border: none;
+		cursor: pointer;
+		letter-spacing: normal;
+		text-transform: none;
+		line-height: 1;
+		transition: opacity 0.15s ease;
+	}
+
+	.gh-main-button:hover {
+		opacity: 0.8;
+		color: #ffffff;
+		text-decoration: none;
+	}
+
+	.gh-gradient-button {
+		background: var(--brand-gradient);
+		background-attachment: fixed;
+	}
+
+	.gh-gradient-button:hover {
+		opacity: 0.9;
+	}
+
+	.gh-outline-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		background: transparent;
+		color: var(--text-primary);
+		font-size: 15px;
+		font-weight: 500;
+		padding: 11px 21px;
+		border-radius: 100px;
+		border: 1.5px solid var(--border-input);
+		font-family: var(--font-system);
+		text-decoration: none;
+		cursor: pointer;
+		transition: border-color 0.15s ease;
+	}
+
+	.gh-outline-button:hover {
+		border-color: var(--text-muted);
+		text-decoration: none;
+	}
+
+	.gh-section-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		margin-bottom: 28px;
+	}
+
+	.gh-section-title {
+		font-size: 32px;
+		font-weight: 700;
+		color: var(--text-primary);
+		margin: 0;
+		line-height: 116%;
+	}
+}
 
 @layer utilities {
 	.bg-brand-gradient {

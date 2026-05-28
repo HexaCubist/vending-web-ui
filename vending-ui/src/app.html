@@ -4,6 +4,19 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width" />
+		<script>
+			(function () {
+				var stored = localStorage.getItem('color-scheme');
+				var preferred =
+					stored ||
+					(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+				document.documentElement.setAttribute('data-color-scheme', preferred);
+				document.documentElement.setAttribute(
+					'data-theme',
+					preferred === 'dark' ? 'dark' : 'fantasy'
+				);
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
