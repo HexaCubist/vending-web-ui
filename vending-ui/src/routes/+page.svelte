@@ -56,7 +56,7 @@
 		padding: 96px 0 80px;
 		background:
 			linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.35) 100%),
-			url('/Untitled-design.png') center / cover no-repeat;
+			url('/Untitled-design.webp') center / cover no-repeat;
 	}
 
 	.gh-hero-heading {
