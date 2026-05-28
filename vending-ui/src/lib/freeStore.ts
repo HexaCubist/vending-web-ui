@@ -8,24 +8,13 @@ import { EntityId } from 'redis-om';
 const redis = createClient({
 	url: env.REDIS_URL,
 	socket: {
-		// Without a reconnect strategy, a Redis blip permanently breaks the
-		// connection until the Node process restarts.
 		reconnectStrategy: (retries) => Math.min(retries * 100, 3000)
 	}
 });
 
-// Surface async client errors instead of letting them go to default handling
-// (which on Node 18 can crash the process).
 redis.on('error', (err) => {
 	console.error('Redis client error:', err);
 });
-
-try {
-	await redis.connect();
-} catch (err) {
-	// Don't crash module init — the reconnect strategy above will keep trying.
-	console.error('Initial Redis connection failed (will keep retrying):', err);
-}
 
 const purchaseSchema = new Schema('Purchase', {
 	product_id: { type: 'string', caseSensitive: true },
@@ -35,16 +24,25 @@ const purchaseSchema = new Schema('Purchase', {
 
 const purchaseRepository = new Repository(purchaseSchema, redis);
 
-// createIndex is async; if Redis is down at boot, swallow it so the module can
-// still be imported. It'll get created on the next successful call.
-purchaseRepository.createIndex().catch((err) => {
-	console.error('Failed to create Redis index on startup:', err);
-});
+// Lazily connect and create index on first use. Never called at module load
+// time so the build process doesn't try to reach Redis (which isn't available
+// during a CapRover build and causes the build to hang).
+let ready: Promise<void> | null = null;
+function getReady(): Promise<void> {
+	if (!ready) {
+		ready = (async () => {
+			if (!redis.isOpen) await redis.connect();
+			await purchaseRepository.createIndex();
+		})();
+	}
+	return ready;
+}
 
 export const ttlInSeconds = 2 * 60 * 60; // 2 hours
 export const maxItems = 1000;
 
 export async function getFreeQueue(): Promise<QueueItem[]> {
+	await getReady();
 	const queueItems = await purchaseRepository.search().return.all();
 	return queueItems.map(
 		(item) =>
@@ -59,6 +57,7 @@ export async function getFreeQueue(): Promise<QueueItem[]> {
 }
 
 export async function addFreeQueueItem(product: Stripe.Product): Promise<void> {
+	await getReady();
 	const purchase = await purchaseRepository.save({
 		product_id: product.id,
 		shelf_loc: parseInt(product.metadata.shelf_loc),
@@ -71,5 +70,6 @@ export async function addFreeQueueItem(product: Stripe.Product): Promise<void> {
 }
 
 export async function removeFreeQueueItem(paymentIntentId: string): Promise<void> {
+	await getReady();
 	await purchaseRepository.remove(paymentIntentId);
 }
