@@ -19,7 +19,16 @@ unsigned long timerDelay = 5000;
 // Each queue item is ~120 bytes (PI id alone is 27 chars). 768 bytes silently
 // fails to parse once the queue exceeds ~5 items.
 // 4096 fits ~30 items. Heap-allocated (ESP8266 has ~50KB free heap).
+//
+// Compatible with both ArduinoJson 6.x and 7.x: v7 dropped the sized
+// DynamicJsonDocument in favour of the elastic JsonDocument, while v6 has no
+// bare JsonDocument. Picking the right one by library version means this
+// compiles no matter which version is installed on the build machine.
+#if ARDUINOJSON_VERSION_MAJOR >= 7
+JsonDocument doc;
+#else
 DynamicJsonDocument doc(4096);
+#endif
 
 // Track recently-completed PI IDs so we don't double-dispense if the queue
 // endpoint hasn't yet reflected our most recent /complete call.
