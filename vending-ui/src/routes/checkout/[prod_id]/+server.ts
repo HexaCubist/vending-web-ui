@@ -25,7 +25,7 @@ export const GET: RequestHandler = async ({ url, params }) => {
 	const price = await stripe.prices.retrieve(priceID);
 	if (price.unit_amount === 0) {
 		const product = await stripe.products.retrieve(params.prod_id);
-		addFreeQueueItem(product);
+		await addFreeQueueItem(product);
 		redirect(303, `/checkout/${params.prod_id}/success`);
 	} else {
 		const success_url = new URL(url);

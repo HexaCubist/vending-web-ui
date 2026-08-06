@@ -6,7 +6,11 @@ import type { QueueItem } from '$lib/queueManager';
 import { EntityId } from 'redis-om';
 
 const redis = createClient({
-	url: env.REDIS_URL
+	url: env.REDIS_URL,
+	socket: {
+		keepAlive: 5000,
+		reconnectStrategy: (retries) => Math.min(retries * 100, 3000)
+	}
 });
 try {
 	await redis.connect();
